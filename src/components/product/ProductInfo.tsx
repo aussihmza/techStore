@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { Product, ProductDetail } from "@/types/product";
 import { useStore } from "@/context/StoreContext";
-import { CartIcon, ShieldIcon, StarIcon, TruckIcon } from "@/components/ui/icons";
+import { CartIcon, MinusIcon, PlusIcon, ShieldIcon, StarIcon, TrashIcon, TruckIcon } from "@/components/ui/icons";
 
 interface ProductInfoProps {
   product: Product;
@@ -13,10 +13,13 @@ const formatPrice = (value: number) =>
   `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export default function ProductInfo({ product, detail }: ProductInfoProps) {
-  const { addToCart } = useStore();
+  const { cart, addToCart, updateQty, removeFromCart } = useStore();
   const navigate = useNavigate();
   const [colorIndex, setColorIndex] = useState(0);
   const [storageIndex, setStorageIndex] = useState(0);
+
+  const cartLine = cart.find((line) => line.id === product.id);
+  const qty = cartLine?.qty ?? 0;
 
   const badgeLabel =
     product.badge === "NEW"
@@ -29,9 +32,8 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
             ? "EDITOR'S CHOICE"
             : "NEW ARRIVAL";
 
-  const handleAdd = () => addToCart(product);
   const handleBuyNow = () => {
-    addToCart(product);
+    if (!cartLine) addToCart(product);
     navigate("/checkout");
   };
 
@@ -128,14 +130,45 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
       <p className="mt-7 text-base leading-relaxed text-slate-500">{detail.description}</p>
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-        <button
-          type="button"
-          onClick={handleAdd}
-          className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark"
-        >
-          <CartIcon className="h-5 w-5" />
-          Add to Cart
-        </button>
+        {qty > 0 ? (
+          <div className="inline-flex flex-1 items-center justify-between rounded-xl border-2 border-slate-400 bg-slate-100 px-2 py-1.5 text-ink sm:min-h-[3.25rem]">
+            <button
+              type="button"
+              aria-label={qty === 1 ? "Remove from cart" : "Decrease quantity"}
+              onClick={() => {
+                if (qty <= 1) removeFromCart(product.id);
+                else updateQty(product.id, qty - 1);
+              }}
+              className={`flex h-10 w-10 items-center justify-center rounded-lg transition-colors hover:bg-black/5 ${
+                qty === 1 ? "text-rose-500 hover:text-rose-600" : "text-ink"
+              }`}
+            >
+              {qty === 1 ? <TrashIcon className="h-5 w-5" /> : <MinusIcon className="h-5 w-5" />}
+            </button>
+
+            <span className="min-w-[2rem] text-center text-lg font-bold tabular-nums" aria-live="polite">
+              {qty}
+            </span>
+
+            <button
+              type="button"
+              aria-label="Increase quantity"
+              onClick={() => updateQty(product.id, qty + 1)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-ink transition-colors hover:bg-black/5"
+            >
+              <PlusIcon className="h-5 w-5" />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => addToCart(product)}
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark"
+          >
+            <CartIcon className="h-5 w-5" />
+            Add to Cart
+          </button>
+        )}
         <button
           type="button"
           onClick={handleBuyNow}

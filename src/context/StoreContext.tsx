@@ -71,7 +71,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           return [...prev, { ...product, qty: 1 }];
         }),
       updateQty: (id, qty) =>
-        setCart((prev) => prev.map((line) => (line.id === id ? { ...line, qty } : line))),
+        setCart((prev) => {
+          if (qty < 1) return prev.filter((line) => line.id !== id);
+          return prev.map((line) => (line.id === id ? { ...line, qty } : line));
+        }),
       removeFromCart: (id) => setCart((prev) => prev.filter((line) => line.id !== id)),
       clearCart: () => setCart([]),
       placeOrder,
