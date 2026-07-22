@@ -1,7 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { navLinks } from "@/lib/products";
 import { useStore } from "@/context/StoreContext";
-import { CartIcon, HeartIcon, SearchIcon, UserIcon } from "@/components/ui/icons";
+import SearchBar from "@/components/layout/SearchBar";
+import { CartIcon, HeartIcon, UserIcon } from "@/components/ui/icons";
 
 export default function Navbar() {
   const { pathname } = useLocation();
@@ -38,14 +39,7 @@ export default function Navbar() {
         </nav>
 
         <div className="ml-auto flex items-center gap-3">
-          <div className="hidden items-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 lg:flex">
-            <SearchIcon className="h-5 w-5 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search products..."
-              className="w-44 bg-transparent px-2 text-base text-slate-700 outline-none placeholder:text-slate-400 xl:w-64"
-            />
-          </div>
+          <SearchBar />
 
           <IconButton
             label="Wishlist"

@@ -132,3 +132,14 @@ export function createDefaultFilters(maxPrice: number): ShopFilters {
     sort: "featured",
   };
 }
+
+export function searchProducts(products: Product[], query: string): Product[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return products;
+
+  return products.filter((p) => {
+    const haystack = `${p.name} ${p.brand} ${p.category}`.toLowerCase();
+    return haystack.includes(q) || q.split(/\s+/).every((word) => haystack.includes(word));
+  });
+}
+

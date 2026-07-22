@@ -8,9 +8,16 @@ interface ProductGridProps {
   total: number;
   sort: SortOption;
   onSortChange: (sort: SortOption) => void;
+  emptyHint?: string;
 }
 
-export default function ProductGrid({ products, total, sort, onSortChange }: ProductGridProps) {
+export default function ProductGrid({
+  products,
+  total,
+  sort,
+  onSortChange,
+  emptyHint,
+}: ProductGridProps) {
   return (
     <div className="flex-1">
       <div className="mb-5 flex items-center justify-between">
@@ -46,7 +53,7 @@ export default function ProductGrid({ products, total, sort, onSortChange }: Pro
         <div className="rounded-2xl border border-dashed border-slate-200 bg-white py-16 text-center">
           <p className="text-lg font-semibold text-ink">No products found</p>
           <p className="mt-2 text-base text-slate-500">
-            Try adjusting your filters to see more results.
+            {emptyHint ?? "Try adjusting your filters to see more results."}
           </p>
         </div>
       )}

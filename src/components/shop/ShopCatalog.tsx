@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import type { ShopFilters } from "@/types/shop";
 import { catalogProducts } from "@/lib/products";
 import {
@@ -7,6 +7,7 @@ import {
   createDefaultFilters,
   getCategoryBySlug,
   getMaxCatalogPrice,
+  searchProducts,
 } from "@/utils/shopFilters";
 import FilterSidebar from "@/components/shop/FilterSidebar";
 import ProductGrid from "@/components/shop/ProductGrid";
@@ -17,6 +18,8 @@ interface ShopCatalogProps {
 }
 
 export default function ShopCatalog({ categorySlug, variant = "shop" }: ShopCatalogProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchQuery = searchParams.get("q")?.trim() ?? "";
   const maxPrice = getMaxCatalogPrice();
   const category = categorySlug ? getCategoryBySlug(categorySlug) : undefined;
 
@@ -30,14 +33,20 @@ export default function ShopCatalog({ categorySlug, variant = "shop" }: ShopCata
     }));
   }, [categorySlug, category, maxPrice]);
 
+  const searchedProducts = useMemo(
+    () => searchProducts(catalogProducts, searchQuery),
+    [searchQuery],
+  );
+
   const totalInScope = useMemo(() => {
-    if (!category) return catalogProducts.length;
-    return catalogProducts.filter((p) => category.productCategories.includes(p.category)).length;
-  }, [category]);
+    const pool = searchedProducts;
+    if (!category) return pool.length;
+    return pool.filter((p) => category.productCategories.includes(p.category)).length;
+  }, [category, searchedProducts]);
 
   const filteredProducts = useMemo(
-    () => applyFilters(catalogProducts, filters, categorySlug),
-    [filters, categorySlug],
+    () => applyFilters(searchedProducts, filters, categorySlug),
+    [searchedProducts, filters, categorySlug],
   );
 
   const clearFilters = () => {
@@ -45,6 +54,12 @@ export default function ShopCatalog({ categorySlug, variant = "shop" }: ShopCata
       ...createDefaultFilters(maxPrice),
       categories: category ? [category.filterKey] : [],
     });
+  };
+
+  const clearSearch = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete("q");
+    setSearchParams(next, { replace: true });
   };
 
   return (
@@ -81,9 +96,24 @@ export default function ShopCatalog({ categorySlug, variant = "shop" }: ShopCata
         )}
       </nav>
 
-      <h1 className="mb-8 mt-2 text-3xl font-bold text-ink sm:text-4xl">
-        {category ? category.label : "All Products"}
-      </h1>
+      <div className="mb-8 mt-2">
+        <h1 className="text-3xl font-bold text-ink sm:text-4xl">
+          {searchQuery
+            ? `Results for “${searchQuery}”`
+            : category
+              ? category.label
+              : "All Products"}
+        </h1>
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={clearSearch}
+            className="mt-2 text-sm font-semibold text-brand hover:underline"
+          >
+            Clear search
+          </button>
+        )}
+      </div>
 
       <section className="flex flex-col items-stretch gap-8 pb-16 lg:flex-row">
         <div className="lg:w-80 lg:shrink-0">
@@ -105,6 +135,11 @@ export default function ShopCatalog({ categorySlug, variant = "shop" }: ShopCata
           total={totalInScope}
           sort={filters.sort}
           onSortChange={(sort) => setFilters((prev) => ({ ...prev, sort }))}
+          emptyHint={
+            searchQuery
+              ? `No products matched “${searchQuery}”. Try a different keyword.`
+              : undefined
+          }
         />
       </section>
     </>
