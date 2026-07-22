@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import ProductImage from "@/components/ui/ProductImage";
 import { MinusIcon, PlusIcon, TrashIcon } from "@/components/ui/icons";
 
@@ -23,12 +24,17 @@ export default function CartItemRow({ item, onQtyChange, onRemove }: CartItemRow
   return (
     <div className="grid grid-cols-12 items-center gap-4 border-t border-slate-100 py-5">
       <div className="col-span-12 flex items-center gap-4 sm:col-span-6">
-        <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+        <Link
+          to={`/product/${item.id}`}
+          className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-slate-100"
+        >
           <ProductImage src={item.image} alt={item.name} fit="contain" className="h-full w-full p-1.5" />
-        </div>
+        </Link>
         <div>
-          <h3 className="text-base font-bold text-ink">{item.name}</h3>
-          <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <Link to={`/product/${item.id}`} className="text-base font-bold text-ink hover:text-brand">
+            {item.name}
+          </Link>
+          <span className="block text-xs font-semibold uppercase tracking-wide text-slate-400">
             {item.category}
           </span>
         </div>

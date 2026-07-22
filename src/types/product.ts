@@ -12,6 +12,27 @@ export interface Product {
   badge?: ProductBadge;
 }
 
+export interface ProductColor {
+  name: string;
+  hex: string;
+}
+
+export interface ProductFeature {
+  title: string;
+  description: string;
+  tone: "light" | "dark" | "accent" | "media";
+  icon?: "chip" | "shield" | "island" | "camera" | "battery" | "sound" | "display" | "speed";
+}
+
+export interface ProductDetail {
+  description: string;
+  colors: ProductColor[];
+  storageOptions: string[];
+  gallery: string[];
+  features: ProductFeature[];
+  monthlyPrice?: number;
+}
+
 export interface FilterOption {
   label: string;
   count: number;

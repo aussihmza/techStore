@@ -14,6 +14,7 @@ import WishlistPage from "@/app/wishlist/page";
 import CartPage from "@/app/cart/page";
 import CheckoutPage from "@/app/checkout/page";
 import OrderSuccessPage from "@/app/order-success/page";
+import ProductDetailPage from "@/app/product/page";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -25,6 +26,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/" element={<HomePage />} />
             <Route path="/shop" element={<ShopPage />} />
             <Route path="/shop/:categorySlug" element={<ShopPage />} />
+            <Route path="/product/:productId" element={<ProductDetailPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/categories/:categorySlug" element={<CategoriesPage />} />
             <Route path="/about" element={<AboutPage />} />

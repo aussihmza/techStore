@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { Product } from "@/types/product";
 import { useStore } from "@/context/StoreContext";
 import Badge from "@/components/ui/Badge";
@@ -26,26 +27,32 @@ export default function ProductCard({ product }: { product: Product }) {
         >
           <HeartIcon className="h-5 w-5" fill={wished ? "currentColor" : "none"} />
         </button>
-        <ProductImage
-          src={product.image}
-          alt={product.name}
-          fit="contain"
-          className="h-full w-full transition-transform duration-300 group-hover:scale-105"
-        />
+        <Link to={`/product/${product.id}`} className="block h-full w-full">
+          <ProductImage
+            src={product.image}
+            alt={product.name}
+            fit="contain"
+            className="h-full w-full transition-transform duration-300 group-hover:scale-105"
+          />
+        </Link>
       </div>
 
       <div className="flex flex-1 flex-col p-5">
-        <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-          {product.category}
-        </span>
-        <h3 className="mt-1 text-lg font-bold text-ink">{product.name}</h3>
+        <Link to={`/product/${product.id}`} className="block">
+          <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+            {product.category}
+          </span>
+          <h3 className="mt-1 text-lg font-bold text-ink transition-colors group-hover:text-brand">
+            {product.name}
+          </h3>
+        </Link>
         <div className="mt-2">
           <Rating value={product.rating} reviews={product.reviews} />
         </div>
         <div className="mt-auto flex items-center justify-between pt-5">
-          <span className="text-2xl font-extrabold text-ink">
+          <Link to={`/product/${product.id}`} className="text-2xl font-extrabold text-ink">
             ${product.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-          </span>
+          </Link>
           <button
             type="button"
             aria-label="Add to cart"

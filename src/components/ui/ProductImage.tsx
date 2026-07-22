@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ImagePlaceholderIcon } from "@/components/ui/icons";
 
 interface ProductImageProps {
@@ -10,6 +10,10 @@ interface ProductImageProps {
 
 export default function ProductImage({ src, alt, className, fit = "contain" }: ProductImageProps) {
   const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
 
   if (failed) {
     return (
