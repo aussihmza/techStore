@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import ProductImage from "@/components/ui/ProductImage";
 import { ArrowRightIcon } from "@/components/ui/icons";
 
@@ -25,19 +26,19 @@ export default function Hero() {
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4">
-            <button
-              type="button"
+            <a
+              href="#featured-innovations"
               className="inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark"
             >
               Shop Latest Deals
               <ArrowRightIcon className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
+            </a>
+            <Link
+              to="/categories"
               className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-base font-semibold text-ink transition-colors hover:bg-slate-50"
             >
               View Collections
-            </button>
+            </Link>
           </div>
         </div>
 

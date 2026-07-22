@@ -1,4 +1,4 @@
-import type { CartLine } from "@/context/StoreContext";
+import type { CartLine } from "@/types/order";
 import ProductImage from "@/components/ui/ProductImage";
 import { formatPrice } from "@/lib/cart";
 import { PlaceOrderButton } from "@/components/checkout/CheckoutForms";

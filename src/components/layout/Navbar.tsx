@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { navLinks } from "@/lib/products";
 import { useStore } from "@/context/StoreContext";
 import SearchBar from "@/components/layout/SearchBar";
@@ -6,7 +6,20 @@ import { CartIcon, HeartIcon, UserIcon } from "@/components/ui/icons";
 
 export default function Navbar() {
   const { pathname } = useLocation();
-  const { wishlistCount, cartCount } = useStore();
+  const navigate = useNavigate();
+  const {
+    wishlistCount,
+    cartCount,
+    isLoggedIn,
+    requireAuth,
+    logout,
+    user,
+  } = useStore();
+
+  const goProtected = (path: string) => {
+    if (!requireAuth()) return;
+    navigate(path);
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
@@ -43,25 +56,44 @@ export default function Navbar() {
 
           <IconButton
             label="Wishlist"
-            to="/wishlist"
             active={pathname === "/wishlist"}
             badge={wishlistCount || undefined}
+            onClick={() => goProtected("/wishlist")}
           >
             <HeartIcon className="h-6 w-6" />
           </IconButton>
 
           <IconButton
             label="Cart"
-            to="/cart"
             active={pathname === "/cart"}
             badge={cartCount || undefined}
+            onClick={() => goProtected("/cart")}
           >
             <CartIcon className="h-6 w-6" />
           </IconButton>
 
-          <IconButton label="Account">
-            <UserIcon className="h-6 w-6" />
-          </IconButton>
+          {isLoggedIn ? (
+            <div className="relative group">
+              <IconButton
+                label={user?.name ? `Account: ${user.name}` : "Account"}
+                active={pathname === "/login" || pathname === "/signup"}
+                onClick={() => logout()}
+              >
+                <UserIcon className="h-6 w-6" />
+              </IconButton>
+              <span className="pointer-events-none absolute right-0 top-full z-10 mt-1 hidden whitespace-nowrap rounded-lg bg-slate-900 px-2 py-1 text-[10px] font-medium text-white group-hover:block">
+                Logout
+              </span>
+            </div>
+          ) : (
+            <IconButton
+              label="Account"
+              to="/login"
+              active={pathname === "/login" || pathname === "/signup"}
+            >
+              <UserIcon className="h-6 w-6" />
+            </IconButton>
+          )}
         </div>
       </div>
     </header>
@@ -73,10 +105,11 @@ interface IconButtonProps {
   badge?: number;
   to?: string;
   active?: boolean;
+  onClick?: () => void;
   children: React.ReactNode;
 }
 
-function IconButton({ label, badge, to, active, children }: IconButtonProps) {
+function IconButton({ label, badge, to, active, onClick, children }: IconButtonProps) {
   const className = `relative rounded-full p-2 transition-colors hover:bg-slate-100 hover:text-brand ${
     active ? "text-brand" : "text-slate-600"
   }`;
@@ -101,7 +134,7 @@ function IconButton({ label, badge, to, active, children }: IconButtonProps) {
   }
 
   return (
-    <button type="button" aria-label={label} className={className}>
+    <button type="button" aria-label={label} onClick={onClick} className={className}>
       {inner}
     </button>
   );

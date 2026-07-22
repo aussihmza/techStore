@@ -1,4 +1,4 @@
-import type { CartLine } from "@/context/StoreContext";
+import type { Product } from "@/types/product";
 
 export interface ShippingInfo {
   firstName: string;
@@ -10,6 +10,10 @@ export interface ShippingInfo {
   zip: string;
 }
 
+export interface CartLine extends Product {
+  qty: number;
+}
+
 export interface PlacedOrder {
   id: string;
   items: CartLine[];
@@ -19,4 +23,5 @@ export interface PlacedOrder {
   shipping: ShippingInfo;
   deliveryFrom: string;
   deliveryTo: string;
+  placedAt?: string;
 }
