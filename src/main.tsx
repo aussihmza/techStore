@@ -15,6 +15,7 @@ import CartPage from "@/app/cart/page";
 import CheckoutPage from "@/app/checkout/page";
 import OrderSuccessPage from "@/app/order-success/page";
 import ProductDetailPage from "@/app/product/page";
+import LegalPage from "@/app/legal/page";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -31,6 +32,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/categories/:categorySlug" element={<CategoriesPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/legal" element={<LegalPage />} />
             <Route path="/wishlist" element={<WishlistPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />

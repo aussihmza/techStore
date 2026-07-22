@@ -1,17 +1,32 @@
+import { Link } from "react-router-dom";
 import { FacebookIcon, InstagramIcon, TwitterIcon } from "@/components/ui/icons";
 
 const columns = [
   {
     title: "Shop Selection",
-    links: ["Laptops & PCs", "Smartphones", "Audio & Sound", "Cameras"],
+    links: [
+      { label: "Laptops & PCs", href: "/shop/laptops" },
+      { label: "Smartphones", href: "/shop/smartphones" },
+      { label: "Audio & Sound", href: "/shop/audio" },
+      { label: "Cameras", href: "/shop/cameras" },
+    ],
   },
   {
     title: "Customer Service",
-    links: ["Shipping Info", "Returns & Warranty", "Order Tracking", "Contact Support"],
+    links: [
+      { label: "Shipping Info", href: "/contact" },
+      { label: "Returns & Warranty", href: "/contact" },
+      { label: "Order Tracking", href: "/contact" },
+      { label: "Contact Support", href: "/contact" },
+    ],
   },
   {
     title: "Legal",
-    links: ["Privacy Policy", "Terms of Service", "Cookie Policy"],
+    links: [
+      { label: "Privacy Policy", href: "/legal#privacy-policy" },
+      { label: "Terms of Service", href: "/legal#terms-of-service" },
+      { label: "Cookie Policy", href: "/legal#cookie-policy" },
+    ],
   },
 ];
 
@@ -51,10 +66,10 @@ export default function Footer() {
               </h4>
               <ul className="space-y-3 text-sm">
                 {col.links.map((link) => (
-                  <li key={link}>
-                    <a href="#" className="transition-colors hover:text-white">
-                      {link}
-                    </a>
+                  <li key={link.label}>
+                    <Link to={link.href} className="transition-colors hover:text-white">
+                      {link.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
