@@ -9,7 +9,7 @@ export default function Hero() {
         <div>
           <span className="inline-flex items-center gap-2 rounded-full bg-brand/10 px-4 py-1.5 text-sm font-semibold text-brand">
             <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-            NEW ARRIVALS 2024
+            NEW ARRIVALS 2026
           </span>
 
           <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-ink sm:text-5xl lg:text-6xl">

@@ -12,11 +12,11 @@ export default function CategoryCard({ collection }: { collection: Collection })
       to={`/categories/${collection.slug}`}
       className="group block overflow-hidden rounded-2xl border border-slate-200 bg-white transition-shadow hover:shadow-lg"
     >
-      <div className="aspect-[16/10] overflow-hidden bg-white p-3">
+      <div className="aspect-[16/10] overflow-hidden bg-slate-100">
         <ProductImage
           src={collection.image}
           alt={collection.title}
-          fit="contain"
+          fit="cover"
           className="h-full w-full transition-transform duration-300 group-hover:scale-105"
         />
       </div>

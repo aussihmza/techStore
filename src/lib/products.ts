@@ -162,7 +162,6 @@ export const featuredProducts: Product[] = [
     rating: 4.9,
     reviews: 64,
     image: "/featured_innovation/Canon_R6.svg",
-    badge: "NEW",
   },
   {
     id: "elite-gaming-mouse",
@@ -203,7 +202,6 @@ export const featuredProducts: Product[] = [
     rating: 4.9,
     reviews: 187,
     image: "/featured_innovation/MAcBOOK_Air.svg",
-    badge: "EDITOR'S CHOICE",
   },
 ];
 
@@ -270,7 +268,6 @@ export const shopProducts: Product[] = [
     rating: 5,
     reviews: 124,
     image: "/featured_innovation/iphone_15promax.jpeg",
-    badge: "NEW",
   },
   {
     id: "shop-sony-wh-1000xm5",
@@ -290,7 +287,7 @@ export const shopProducts: Product[] = [
     price: 2499,
     rating: 5,
     reviews: 89,
-    image: "/shop/macbook_pro16.svg",
+    image: "/cart/pro_16.svg",
   },
   {
     id: "shop-ipad-pro-12",
@@ -300,7 +297,7 @@ export const shopProducts: Product[] = [
     price: 1099,
     rating: 4.5,
     reviews: 210,
-    image: "/shop/ipad_pro.svg",
+    image: "/shop/iPad_pro.webp",
   },
   {
     id: "shop-galaxy-watch-6-pro",
@@ -310,7 +307,7 @@ export const shopProducts: Product[] = [
     price: 449,
     rating: 4.5,
     reviews: 156,
-    image: "/shop/glaxy_watch_6pro.svg",
+    image: "/shop/galaxy_8.jpg",
   },
   {
     id: "shop-fujifilm-x100v",
@@ -320,7 +317,7 @@ export const shopProducts: Product[] = [
     price: 1399,
     rating: 5,
     reviews: 921,
-    image: "/shop/fujifilm_x100.svg",
+    image: "/shop/fujifilm.webp",
   },
   {
     id: "shop-logitech-g-pro-x",
@@ -330,7 +327,7 @@ export const shopProducts: Product[] = [
     price: 149,
     rating: 4.5,
     reviews: 408,
-    image: "/shop/logitech_gpro.svg",
+    image: "/shop/logitech_gpro.webp",
   },
   {
     id: "shop-samsung-t7-ssd",
@@ -340,9 +337,10 @@ export const shopProducts: Product[] = [
     price: 179,
     rating: 5,
     reviews: 1023,
-    image: "/shop/samsung_t7_ssd.svg",
+    image: "/shop/samsung_t7.jpg",
   },
 ];
+
 
 /** Single source of truth for shop filtering & category pages */
 export const catalogProducts: Product[] = [
