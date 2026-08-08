@@ -15,23 +15,23 @@ import {
   loginApi,
   logoutApi,
   registerApi,
-} from "@/lib/api/auth";
+} from "@/user/api/auth";
 import {
   addCartItemApi,
   clearCartApi,
   getCartApi,
   removeCartItemApi,
   updateCartItemApi,
-} from "@/lib/api/cart";
-import { removeWishlistItemApi, toggleWishlistApi } from "@/lib/api/wishlist";
+} from "@/user/api/cart";
+import { removeWishlistItemApi, toggleWishlistApi } from "@/user/api/wishlist";
 import {
   getOrderByIdApi,
   placeOrderApi,
   type PaymentMethodOption,
-} from "@/lib/api/orders";
-import { completeCheckoutSessionApi } from "@/lib/api/payments";
-import { clearStoredPromo } from "@/lib/api/promo";
-import { bootstrapSession, resetSessionBootstrap } from "@/lib/api/session";
+} from "@/user/api/orders";
+import { completeCheckoutSessionApi } from "@/user/api/payments";
+import { clearStoredPromo } from "@/user/api/promo";
+import { bootstrapSession, resetSessionBootstrap } from "@/user/api/session";
 import { clearLegacyStorage, getToken, setToken } from "@/lib/api/token";
 import {
   consumeAuthReturn,

@@ -1,6 +1,6 @@
 import { Review } from "../../models/Review.js";
 import { ApiError } from "../../utils/ApiError.js";
-import { syncProductRating } from "../../services/reviewService.js";
+import { syncProductRating } from "../../user/services/reviewService.js";
 
 function toAdminReview(doc) {
   const review = typeof doc.toObject === "function" ? doc.toObject() : doc;

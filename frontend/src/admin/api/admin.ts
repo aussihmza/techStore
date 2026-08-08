@@ -1,5 +1,5 @@
 import { apiRequest } from "@/lib/api/client";
-import type { ApiProduct } from "@/lib/api/products";
+import type { ApiProduct } from "@/user/api/products";
 import type { PlacedOrder } from "@/types/order";
 
 export interface AdminStats {

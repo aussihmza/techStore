@@ -5,7 +5,7 @@ import {
   getAdminProductsApi,
   updateAdminProductApi,
 } from "@/admin/api/admin";
-import type { ApiProduct } from "@/lib/api/products";
+import type { ApiProduct } from "@/user/api/products";
 import { ApiError } from "@/lib/api/client";
 
 type FormState = {
