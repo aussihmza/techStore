@@ -1,18 +1,11 @@
 import { Link } from "react-router-dom";
+import type { CartLine } from "@/types/order";
+import { formatVariantLabel } from "@/lib/variants";
 import ProductImage from "@/components/ui/ProductImage";
 import { MinusIcon, PlusIcon, TrashIcon } from "@/components/ui/icons";
 
-export interface CartItem {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  image: string;
-  qty: number;
-}
-
 interface CartItemRowProps {
-  item: CartItem;
+  item: CartLine;
   onQtyChange: (id: string, qty: number) => void;
   onRemove: (id: string) => void;
 }
@@ -21,19 +14,25 @@ const formatPrice = (value: number) =>
   `$${value.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
 
 export default function CartItemRow({ item, onQtyChange, onRemove }: CartItemRowProps) {
+  const productHref = `/product/${item.productSlug || item.id.split("__")[0]}`;
+  const variant = formatVariantLabel(item);
+
   return (
     <div className="grid grid-cols-12 items-center gap-4 border-t border-slate-100 py-5">
       <div className="col-span-12 flex items-center gap-4 sm:col-span-6">
         <Link
-          to={`/product/${item.id}`}
+          to={productHref}
           className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-slate-100"
         >
           <ProductImage src={item.image} alt={item.name} fit="contain" className="h-full w-full p-1.5" />
         </Link>
         <div>
-          <Link to={`/product/${item.id}`} className="text-base font-bold text-ink hover:text-brand">
+          <Link to={productHref} className="text-base font-bold text-ink hover:text-brand">
             {item.name}
           </Link>
+          {variant ? (
+            <span className="mt-0.5 block text-sm text-slate-500">{variant}</span>
+          ) : null}
           <span className="block text-xs font-semibold uppercase tracking-wide text-slate-400">
             {item.category}
           </span>

@@ -178,10 +178,13 @@ export async function sendOrderConfirmationEmail(order) {
   const discount = Number(order.discount) || 0;
   const orderId = String(order.orderId || "").replace(/^#/, "");
 
-  const itemLines = (order.items || []).map(
-    (item) =>
-      `${item.name} x${item.qty} - ${formatMoney(item.price * item.qty)}`,
-  );
+  const itemLines = (order.items || []).map((item) => {
+    const variant = [item.selectedColor?.name, item.selectedStorage]
+      .filter(Boolean)
+      .join(" / ");
+    const label = variant ? `${item.name} (${variant})` : item.name;
+    return `${label} x${item.qty} - ${formatMoney(item.price * item.qty)}`;
+  });
 
   // Keep subject calm/transactional (less spam-filter heat)
   const subject = `Your TechStore order ${orderId}`;
@@ -221,18 +224,26 @@ export async function sendOrderConfirmationEmail(order) {
     .join("\n");
 
   const itemsHtml = (order.items || [])
-    .map(
-      (item) => `
+    .map((item) => {
+      const variant = [item.selectedColor?.name, item.selectedStorage]
+        .filter(Boolean)
+        .join(" / ");
+      return `
         <tr>
           <td style="padding:10px 0;border-bottom:1px solid #e2e8f0;">
             <div style="font-weight:600;">${escapeHtml(item.name)}</div>
+            ${
+              variant
+                ? `<div style="color:#64748b;font-size:13px;">${escapeHtml(variant)}</div>`
+                : ""
+            }
             <div style="color:#64748b;font-size:13px;">Qty ${item.qty}</div>
           </td>
           <td style="padding:10px 0;border-bottom:1px solid #e2e8f0;text-align:right;font-weight:600;">
             ${formatMoney(item.price * item.qty)}
           </td>
-        </tr>`,
-    )
+        </tr>`;
+    })
     .join("");
 
   const ctaHtml = ordersUrl

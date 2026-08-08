@@ -25,7 +25,7 @@ export function toProductResponse(product) {
     image: doc.image,
     badge: doc.badge,
     description: doc.description,
-    colors: doc.colors,
+    colors: [],
     storageOptions: doc.storageOptions,
     gallery: doc.gallery,
     features: doc.features,

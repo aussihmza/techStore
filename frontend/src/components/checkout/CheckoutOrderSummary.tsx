@@ -1,6 +1,7 @@
 import type { CartLine } from "@/types/order";
 import ProductImage from "@/components/ui/ProductImage";
 import { formatPrice } from "@/lib/cart";
+import { formatVariantLabel } from "@/lib/variants";
 import { PlaceOrderButton } from "@/components/checkout/CheckoutForms";
 
 interface CheckoutOrderSummaryProps {
@@ -43,6 +44,9 @@ export default function CheckoutOrderSummary({
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-ink">{item.name}</p>
+              {formatVariantLabel(item) ? (
+                <p className="truncate text-xs text-slate-500">{formatVariantLabel(item)}</p>
+              ) : null}
               <p className="text-xs uppercase tracking-wide text-slate-400">{item.category}</p>
               <p className="mt-0.5 text-xs text-slate-500">Qty: {item.qty}</p>
             </div>

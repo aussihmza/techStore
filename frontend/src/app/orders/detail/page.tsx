@@ -4,6 +4,7 @@ import { useStore } from "@/context/StoreContext";
 import type { PlacedOrder } from "@/types/order";
 import { formatPrice } from "@/lib/cart";
 import { formatOrderDate, formatShippingAddress } from "@/lib/order";
+import { formatVariantLabel } from "@/lib/variants";
 import OrderStatusBadge from "@/components/orders/OrderStatusBadge";
 import OrderTimeline from "@/components/orders/OrderTimeline";
 import ProductImage from "@/components/ui/ProductImage";
@@ -97,6 +98,9 @@ export default function OrderDetailPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold text-ink">{item.name}</p>
+                    {formatVariantLabel(item) ? (
+                      <p className="text-sm text-slate-500">{formatVariantLabel(item)}</p>
+                    ) : null}
                     <p className="text-sm text-slate-500">Qty {item.qty}</p>
                   </div>
                   <p className="font-semibold text-ink">

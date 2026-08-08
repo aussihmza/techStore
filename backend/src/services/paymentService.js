@@ -71,17 +71,29 @@ export const paymentService = {
       payment_method_types: ["card"],
       customer_email: validatedShipping.email,
       line_items: [
-        ...cart.items.map((item) => ({
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: item.name,
-              images: item.image?.startsWith("http") ? [item.image] : undefined,
+        ...cart.items.map((item) => {
+          const variantBits = [
+            item.selectedColor?.name,
+            item.selectedStorage,
+          ].filter(Boolean);
+          const name = variantBits.length
+            ? `${item.name} (${variantBits.join(" / ")})`
+            : item.name;
+
+          return {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name,
+                images: item.image?.startsWith("http")
+                  ? [item.image]
+                  : undefined,
+              },
+              unit_amount: toCents(item.price),
             },
-            unit_amount: toCents(item.price),
-          },
-          quantity: item.qty,
-        })),
+            quantity: item.qty,
+          };
+        }),
         {
           price_data: {
             currency: "usd",

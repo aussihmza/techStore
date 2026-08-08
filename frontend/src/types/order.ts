@@ -12,6 +12,11 @@ export interface ShippingInfo {
 
 export interface CartLine extends Product {
   qty: number;
+  productSlug?: string;
+  lineId?: string;
+  selectedColor?: { name: string; hex: string } | null;
+  selectedStorage?: string | null;
+  variantLabel?: string | null;
 }
 
 export type FulfillmentStatus =

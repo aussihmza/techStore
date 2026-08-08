@@ -1,7 +1,16 @@
 import mongoose from "mongoose";
 
+const selectedColorSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    hex: { type: String, required: true, trim: true },
+  },
+  { _id: false }
+);
+
 const cartItemSchema = new mongoose.Schema(
   {
+    lineId: { type: String, trim: true },
     productSlug: { type: String, required: true },
     name: { type: String, required: true },
     category: { type: String, required: true },
@@ -15,6 +24,8 @@ const cartItemSchema = new mongoose.Schema(
       enum: ["SALE", "NEW", "BEST SELLER", "EDITOR'S CHOICE"],
     },
     qty: { type: Number, required: true, min: 1, default: 1 },
+    selectedColor: { type: selectedColorSchema, default: null },
+    selectedStorage: { type: String, default: null, trim: true },
   },
   { _id: false }
 );

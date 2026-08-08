@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { Product, ProductDetail } from "@/types/product";
 import { useStore } from "@/context/StoreContext";
+import { buildCartLineId } from "@/lib/variants";
 import { CartIcon, MinusIcon, PlusIcon, ShieldIcon, StarIcon, TrashIcon, TruckIcon } from "@/components/ui/icons";
 
 interface ProductInfoProps {
@@ -15,10 +16,15 @@ const formatPrice = (value: number) =>
 export default function ProductInfo({ product, detail }: ProductInfoProps) {
   const { cart, addToCart, updateQty, removeFromCart } = useStore();
   const navigate = useNavigate();
-  const [colorIndex, setColorIndex] = useState(0);
   const [storageIndex, setStorageIndex] = useState(0);
 
-  const cartLine = cart.find((line) => line.id === product.id);
+  const selectedStorage = detail.storageOptions[storageIndex] || null;
+  const lineId = useMemo(
+    () => buildCartLineId(product.id, null, selectedStorage),
+    [product.id, selectedStorage],
+  );
+
+  const cartLine = cart.find((line) => line.id === lineId);
   const qty = cartLine?.qty ?? 0;
 
   const badgeLabel =
@@ -32,8 +38,14 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
             ? "EDITOR'S CHOICE"
             : "NEW ARRIVAL";
 
-  const handleBuyNow = () => {
-    if (!cartLine) addToCart(product);
+  const variantOptions = {
+    storage: selectedStorage || null,
+  };
+
+  const handleAdd = () => addToCart(product, variantOptions);
+
+  const handleBuyNow = async () => {
+    if (!cartLine) await addToCart(product, variantOptions);
     navigate("/checkout");
   };
 
@@ -78,34 +90,8 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
         )}
       </div>
 
-      {detail.colors.length > 0 && (
-        <div className="mt-8">
-          <p className="text-sm font-semibold text-ink">
-            Color —{" "}
-            <span className="font-normal text-slate-500">{detail.colors[colorIndex]?.name}</span>
-          </p>
-          <div className="mt-3 flex flex-wrap gap-3">
-            {detail.colors.map((color, i) => (
-              <button
-                key={color.name}
-                type="button"
-                aria-label={color.name}
-                aria-pressed={colorIndex === i}
-                onClick={() => setColorIndex(i)}
-                className={`h-9 w-9 rounded-full transition-all ${
-                  colorIndex === i
-                    ? "ring-2 ring-ink ring-offset-2"
-                    : "hover:ring-1 hover:ring-slate-300 hover:ring-offset-1"
-                }`}
-                style={{ backgroundColor: color.hex }}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
       {detail.storageOptions.length > 0 && (
-        <div className="mt-7">
+        <div className="mt-8">
           <p className="text-sm font-semibold text-ink">
             {product.category === "Wearables" ? "Size" : "Storage"}
           </p>
@@ -138,8 +124,8 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
               type="button"
               aria-label={qty === 1 ? "Remove from cart" : "Decrease quantity"}
               onClick={() => {
-                if (qty <= 1) removeFromCart(product.id);
-                else updateQty(product.id, qty - 1);
+                if (qty <= 1) removeFromCart(lineId);
+                else updateQty(lineId, qty - 1);
               }}
               className={`flex h-10 w-10 items-center justify-center rounded-lg transition-colors hover:bg-black/5 ${
                 qty === 1 ? "text-rose-500 hover:text-rose-600" : "text-ink"
@@ -155,25 +141,21 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
             <button
               type="button"
               aria-label="Increase quantity"
-              onClick={() => updateQty(product.id, qty + 1)}
+              onClick={() => updateQty(lineId, qty + 1)}
               className="flex h-10 w-10 items-center justify-center rounded-lg text-ink transition-colors hover:bg-black/5"
             >
               <PlusIcon className="h-5 w-5" />
             </button>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={() => addToCart(product)}
-            className="btn-primary flex-1"
-          >
+          <button type="button" onClick={() => void handleAdd()} className="btn-primary flex-1">
             <CartIcon className="h-5 w-5" />
             Add to Cart
           </button>
         )}
         <button
           type="button"
-          onClick={handleBuyNow}
+          onClick={() => void handleBuyNow()}
           className="btn-secondary flex-1 border-brand/40 text-brand hover:border-brand"
         >
           Buy Now

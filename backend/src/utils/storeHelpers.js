@@ -5,8 +5,59 @@ import { ApiError } from "./ApiError.js";
 
 export const TAX_RATE = 0.08;
 
-export function productToLineItem(product, qty = 1) {
+export function normalizeVariantToken(value = "") {
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9._-]/g, "");
+}
+
+export function buildLineId(productSlug, colorName = "", storage = "") {
+  const color = normalizeVariantToken(colorName) || "default";
+  const storageToken = normalizeVariantToken(storage) || "default";
+  return `${productSlug}__${color}__${storageToken}`;
+}
+
+export function resolveProductVariants(product, _colorName, storageOption) {
+  // Color options intentionally disabled for the catalog
+  const selectedColor = null;
+  const storageOptions = Array.isArray(product.storageOptions)
+    ? product.storageOptions
+    : [];
+
+  let selectedStorage = null;
+  if (storageOptions.length > 0) {
+    if (storageOption) {
+      selectedStorage = storageOptions.find(
+        (option) =>
+          String(option).toLowerCase() ===
+          String(storageOption).trim().toLowerCase(),
+      );
+      if (!selectedStorage) {
+        throw new ApiError(
+          400,
+          "Selected storage/size is not available for this product.",
+        );
+      }
+    } else {
+      selectedStorage = storageOptions[0];
+    }
+  }
+
+  return { selectedColor, selectedStorage };
+}
+
+export function productToLineItem(product, qty = 1, variants = {}) {
+  const { selectedColor = null, selectedStorage = null } = variants;
+  const lineId = buildLineId(
+    product.slug,
+    selectedColor?.name,
+    selectedStorage,
+  );
+
   return {
+    lineId,
     productSlug: product.slug,
     name: product.name,
     category: product.category,
@@ -17,17 +68,40 @@ export function productToLineItem(product, qty = 1) {
     image: product.image,
     badge: product.badge,
     qty,
+    selectedColor: selectedColor
+      ? { name: selectedColor.name, hex: selectedColor.hex }
+      : null,
+    selectedStorage: selectedStorage || null,
   };
 }
 
 export function productToWishlistItem(product) {
-  const { qty: _qty, ...item } = productToLineItem(product, 1);
+  const { qty: _qty, lineId: _lineId, selectedColor: _c, selectedStorage: _s, ...item } =
+    productToLineItem(product, 1);
   return item;
 }
 
+export function getItemLineId(item) {
+  if (item.lineId) return item.lineId;
+  return buildLineId(
+    item.productSlug,
+    item.selectedColor?.name,
+    item.selectedStorage,
+  );
+}
+
+export function formatVariantLabel(item) {
+  const parts = [];
+  if (item.selectedColor?.name) parts.push(item.selectedColor.name);
+  if (item.selectedStorage) parts.push(item.selectedStorage);
+  return parts.join(" · ");
+}
+
 export function toCartItemResponse(item) {
+  const lineId = getItemLineId(item);
   return {
-    id: item.productSlug,
+    id: lineId,
+    lineId,
     productSlug: item.productSlug,
     name: item.name,
     category: item.category,
@@ -38,6 +112,9 @@ export function toCartItemResponse(item) {
     image: item.image,
     badge: item.badge,
     qty: item.qty,
+    selectedColor: item.selectedColor || null,
+    selectedStorage: item.selectedStorage || null,
+    variantLabel: formatVariantLabel(item),
   };
 }
 

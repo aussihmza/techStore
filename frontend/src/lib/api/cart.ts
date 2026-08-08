@@ -10,6 +10,12 @@ export interface CartData {
   total: number;
 }
 
+export interface AddCartItemOptions {
+  qty?: number;
+  color?: string | null;
+  storage?: string | null;
+}
+
 export const getCartApi = createCachedRequest(
   () => "/cart",
   () => apiRequest<CartData>("/cart"),
@@ -25,22 +31,31 @@ async function mutateCart(
   return data;
 }
 
-export function addCartItemApi(productSlug: string, qty = 1) {
+export function addCartItemApi(
+  productSlug: string,
+  options: AddCartItemOptions = {},
+) {
+  const { qty = 1, color, storage } = options;
   return mutateCart("/cart/items", {
     method: "POST",
-    body: JSON.stringify({ productSlug, qty }),
+    body: JSON.stringify({
+      productSlug,
+      qty,
+      color: color || undefined,
+      storage: storage || undefined,
+    }),
   });
 }
 
-export function updateCartItemApi(productSlug: string, qty: number) {
-  return mutateCart(`/cart/items/${encodeURIComponent(productSlug)}`, {
+export function updateCartItemApi(lineId: string, qty: number) {
+  return mutateCart(`/cart/items/${encodeURIComponent(lineId)}`, {
     method: "PUT",
     body: JSON.stringify({ qty }),
   });
 }
 
-export function removeCartItemApi(productSlug: string) {
-  return mutateCart(`/cart/items/${encodeURIComponent(productSlug)}`, {
+export function removeCartItemApi(lineId: string) {
+  return mutateCart(`/cart/items/${encodeURIComponent(lineId)}`, {
     method: "DELETE",
   });
 }

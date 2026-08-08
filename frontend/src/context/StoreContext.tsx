@@ -71,7 +71,10 @@ interface StoreContextValue {
   isWishlisted: (id: string) => boolean;
   toggleWishlist: (product: Product) => Promise<void>;
   removeFromWishlist: (id: string) => Promise<void>;
-  addToCart: (product: Product) => Promise<void>;
+  addToCart: (
+    product: Product,
+    options?: { color?: string | null; storage?: string | null },
+  ) => Promise<void>;
   updateQty: (id: string, qty: number) => Promise<void>;
   removeFromCart: (id: string) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -277,13 +280,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const addToCart = useCallback(
-    async (product: Product) => {
+    async (
+      product: Product,
+      options?: { color?: string | null; storage?: string | null },
+    ) => {
       if (!user) {
         setLoginPromptOpen(true);
         return;
       }
       try {
-        const data = await addCartItemApi(product.id, 1);
+        const data = await addCartItemApi(product.id, {
+          qty: 1,
+          color: options?.color,
+          storage: options?.storage,
+        });
         setCart(data.items);
       } catch (error) {
         console.error(toErrorMessage(error, "Add to cart failed"));

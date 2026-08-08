@@ -67,7 +67,7 @@ export function toProductCard(product: ApiProduct): Product {
 export function toProductDetail(product: ApiProduct): ProductDetail {
   return {
     description: product.description ?? "",
-    colors: product.colors ?? [],
+    colors: [],
     storageOptions: product.storageOptions ?? [],
     gallery: product.gallery?.length ? product.gallery : [product.image],
     features: product.features ?? [],

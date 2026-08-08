@@ -273,53 +273,6 @@ export const FEATURE_PRESETS = {
   ],
 };
 
-export const COLOR_PRESETS = {
-  Smartphones: [
-    { name: "Black", hex: "#1c1c1e" },
-    { name: "Blue", hex: "#a8c7e8" },
-    { name: "Pink", hex: "#f2cdd8" },
-    { name: "Yellow", hex: "#f5e6a3" },
-    { name: "Green", hex: "#b8d4c8" },
-  ],
-  Laptops: [
-    { name: "Space Black", hex: "#2c2c2e" },
-    { name: "Silver", hex: "#d1d1d6" },
-    { name: "Starlight", hex: "#f5e6d3" },
-  ],
-  Audio: [
-    { name: "Black", hex: "#1c1c1e" },
-    { name: "Silver", hex: "#c7c7cc" },
-    { name: "Midnight", hex: "#3a3a3c" },
-  ],
-  Wearables: [
-    { name: "Midnight", hex: "#1c1c1e" },
-    { name: "Starlight", hex: "#f5e6d3" },
-    { name: "Red", hex: "#bf1e2e" },
-    { name: "Blue", hex: "#5b8def" },
-  ],
-  Cameras: [
-    { name: "Black", hex: "#1c1c1e" },
-    { name: "Graphite", hex: "#4a4a4a" },
-  ],
-  Photography: [
-    { name: "Black", hex: "#1c1c1e" },
-    { name: "Silver", hex: "#c7c7cc" },
-  ],
-  Tablets: [
-    { name: "Space Black", hex: "#2c2c2e" },
-    { name: "Silver", hex: "#d1d1d6" },
-  ],
-  Accessories: [
-    { name: "Black", hex: "#1c1c1e" },
-    { name: "White", hex: "#f5f5f7" },
-    { name: "Graphite", hex: "#5c5c5e" },
-  ],
-  Storage: [
-    { name: "Black", hex: "#1c1c1e" },
-    { name: "Blue", hex: "#3b82f6" },
-  ],
-};
-
 export const STORAGE_PRESETS = {
   Smartphones: ["128GB", "256GB", "512GB"],
   Laptops: ["512GB", "1TB", "2TB"],
@@ -357,7 +310,6 @@ export const DETAIL_OVERRIDES = {
 
 export function buildProductDetails(product, allProducts) {
   const override = DETAIL_OVERRIDES[product.slug] ?? {};
-  const colors = COLOR_PRESETS[product.category] ?? COLOR_PRESETS.Accessories;
   const storageOptions = STORAGE_PRESETS[product.category] ?? [];
   const features = FEATURE_PRESETS[product.category] ?? FEATURE_PRESETS.Accessories;
 
@@ -374,7 +326,7 @@ export function buildProductDetails(product, allProducts) {
     description:
       override.description ??
       `${product.name} by ${product.brand}. Premium ${product.category.toLowerCase()} engineered for everyday performance, refined design, and lasting reliability.`,
-    colors: override.colors ?? colors,
+    colors: [],
     storageOptions: override.storageOptions ?? storageOptions,
     gallery: (override.gallery ?? gallery).slice(0, 4),
     features: override.features ?? features,
