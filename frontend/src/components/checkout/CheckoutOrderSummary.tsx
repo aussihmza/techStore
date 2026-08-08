@@ -8,6 +8,8 @@ interface CheckoutOrderSummaryProps {
   subtotal: number;
   taxes: number;
   total: number;
+  discount?: number;
+  promoCode?: string | null;
   submitting?: boolean;
   submitLabel?: string;
   loadingLabel?: string;
@@ -18,6 +20,8 @@ export default function CheckoutOrderSummary({
   subtotal,
   taxes,
   total,
+  discount = 0,
+  promoCode = null,
   submitting = false,
   submitLabel = "Place Order",
   loadingLabel = "Placing order...",
@@ -54,6 +58,16 @@ export default function CheckoutOrderSummary({
           <dt className="text-slate-500">Subtotal</dt>
           <dd className="font-medium text-ink">{formatPrice(subtotal)}</dd>
         </div>
+        {discount > 0 ? (
+          <div className="flex justify-between">
+            <dt className="text-emerald-600">
+              Discount{promoCode ? ` (${promoCode})` : ""}
+            </dt>
+            <dd className="font-semibold text-emerald-600">
+              -{formatPrice(discount)}
+            </dd>
+          </div>
+        ) : null}
         <div className="flex justify-between">
           <dt className="text-slate-500">Shipping</dt>
           <dd className="font-semibold text-emerald-500">Free</dd>

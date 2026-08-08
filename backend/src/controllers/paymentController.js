@@ -8,7 +8,8 @@ export const paymentController = {
     try {
       const data = await paymentService.createCheckoutSession(
         req.user._id,
-        req.body.shipping
+        req.body.shipping,
+        req.body.promoCode
       );
       return ApiResponse(res, 200, data, "Checkout session created");
     } catch (error) {

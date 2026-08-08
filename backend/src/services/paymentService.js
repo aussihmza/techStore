@@ -7,6 +7,11 @@ import {
   getOrCreateCart,
   requireShipping,
 } from "../utils/storeHelpers.js";
+import {
+  calcPromoDiscount,
+  getPromoDefinition,
+  normalizePromoCode,
+} from "../config/promos.js";
 
 function toCents(amount) {
   return Math.round(Number(amount) * 100);
@@ -23,8 +28,23 @@ function getStripe() {
   }
 }
 
+function resolvePromo(subtotal, promoCode) {
+  const normalized = normalizePromoCode(promoCode || "");
+  if (!normalized) return { promoCode: null, discount: 0 };
+
+  const promo = getPromoDefinition(normalized);
+  if (!promo) {
+    throw new ApiError(400, "Invalid promo code.");
+  }
+
+  return {
+    promoCode: promo.code,
+    discount: calcPromoDiscount(subtotal, promo),
+  };
+}
+
 export const paymentService = {
-  async createCheckoutSession(userId, shipping) {
+  async createCheckoutSession(userId, shipping, promoCode) {
     const stripe = getStripe();
     const cart = await getOrCreateCart(userId);
 
@@ -37,7 +57,8 @@ export const paymentService = {
       (sum, item) => sum + item.price * item.qty,
       0
     );
-    const totals = calcCartTotals(subtotal);
+    const promo = resolvePromo(subtotal, promoCode);
+    const totals = calcCartTotals(subtotal, promo.discount);
     const amount = toCents(totals.total);
 
     if (amount < 50) {
@@ -45,8 +66,7 @@ export const paymentService = {
     }
 
     const frontendUrl = env.corsOrigin.replace(/\/$/, "");
-
-    const session = await stripe.checkout.sessions.create({
+    const sessionPayload = {
       mode: "payment",
       payment_method_types: ["card"],
       customer_email: validatedShipping.email,
@@ -75,10 +95,24 @@ export const paymentService = {
         userId: String(userId),
         shipping: JSON.stringify(validatedShipping),
         expectedTotal: String(totals.total),
+        promoCode: promo.promoCode || "",
+        discount: String(totals.discount || 0),
       },
       success_url: `${frontendUrl}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${frontendUrl}/checkout?checkout=cancel`,
-    });
+    };
+
+    if (totals.discount > 0) {
+      const coupon = await stripe.coupons.create({
+        amount_off: toCents(totals.discount),
+        currency: "usd",
+        duration: "once",
+        name: promo.promoCode || "Promo",
+      });
+      sessionPayload.discounts = [{ coupon: coupon.id }];
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionPayload);
 
     return {
       url: session.url,
@@ -112,7 +146,8 @@ export const paymentService = {
     const result = await orderService.createFromPaidCheckout(
       userId,
       shipping,
-      session.id
+      session.id,
+      session.metadata?.promoCode || null
     );
 
     return {

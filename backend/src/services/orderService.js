@@ -8,12 +8,34 @@ import {
   requireShipping,
   toOrderResponse,
 } from "../utils/storeHelpers.js";
+import {
+  calcPromoDiscount,
+  getPromoDefinition,
+  normalizePromoCode,
+} from "../config/promos.js";
 
 function normalizeOrderQuery(orderId = "") {
   return orderId.trim().toUpperCase().replace(/^#/, "");
 }
 
-async function createOrderFromCart(userId, shipping, payment) {
+function resolvePromo(subtotal, promoCode) {
+  const normalized = normalizePromoCode(promoCode || "");
+  if (!normalized) {
+    return { promoCode: null, discount: 0 };
+  }
+
+  const promo = getPromoDefinition(normalized);
+  if (!promo) {
+    throw new ApiError(400, "Invalid promo code.");
+  }
+
+  return {
+    promoCode: promo.code,
+    discount: calcPromoDiscount(subtotal, promo),
+  };
+}
+
+async function createOrderFromCart(userId, shipping, payment, promoCode) {
   const cart = await getOrCreateCart(userId);
 
   if (!cart.items.length) {
@@ -25,7 +47,8 @@ async function createOrderFromCart(userId, shipping, payment) {
     (sum, item) => sum + item.price * item.qty,
     0
   );
-  const totals = calcCartTotals(subtotal);
+  const promo = resolvePromo(subtotal, promoCode);
+  const totals = calcCartTotals(subtotal, promo.discount);
   const delivery = getEstimatedDelivery();
 
   let order;
@@ -38,6 +61,7 @@ async function createOrderFromCart(userId, shipping, payment) {
         user: userId,
         items: cart.items,
         ...totals,
+        promoCode: promo.promoCode,
         shipping: validatedShipping,
         deliveryFrom: delivery.from,
         deliveryTo: delivery.to,
@@ -91,30 +115,40 @@ export const orderService = {
     return { order: toOrderResponse(order) };
   },
 
-  async create(userId, { shipping, paymentMethod = "cod" } = {}) {
+  async create(userId, { shipping, paymentMethod = "cod", promoCode } = {}) {
     if (paymentMethod !== "cod") {
       throw new ApiError(400, "Use Stripe Checkout for card payments");
     }
 
-    const order = await createOrderFromCart(userId, shipping, {
-      paymentMethod: "cod",
-      paymentStatus: "pending",
-    });
+    const order = await createOrderFromCart(
+      userId,
+      shipping,
+      {
+        paymentMethod: "cod",
+        paymentStatus: "pending",
+      },
+      promoCode
+    );
 
     return { order: toOrderResponse(order) };
   },
 
-  async createFromPaidCheckout(userId, shipping, stripeSessionId) {
+  async createFromPaidCheckout(userId, shipping, stripeSessionId, promoCode) {
     const existing = await Order.findOne({ stripeSessionId });
     if (existing) {
       return { order: toOrderResponse(existing), alreadyCompleted: true };
     }
 
-    const order = await createOrderFromCart(userId, shipping, {
-      paymentMethod: "card",
-      paymentStatus: "paid",
-      stripeSessionId,
-    });
+    const order = await createOrderFromCart(
+      userId,
+      shipping,
+      {
+        paymentMethod: "card",
+        paymentStatus: "paid",
+        stripeSessionId,
+      },
+      promoCode
+    );
 
     return { order: toOrderResponse(order), alreadyCompleted: false };
   },

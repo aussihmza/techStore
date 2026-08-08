@@ -8,6 +8,7 @@ import orderRoutes from "./orderRoutes.js";
 import wishlistRoutes from "./wishlistRoutes.js";
 import contactRoutes from "./contactRoutes.js";
 import newsletterRoutes from "./newsletterRoutes.js";
+import promoRoutes from "./promoRoutes.js";
 import paymentRoutes from "./paymentRoutes.js";
 
 const router = Router();
@@ -25,6 +26,7 @@ router.use("/orders", orderRoutes);
 router.use("/wishlist", wishlistRoutes);
 router.use("/contact", contactRoutes);
 router.use("/newsletter", newsletterRoutes);
+router.use("/promo", promoRoutes);
 router.use("/payments", paymentRoutes);
 
 export default router;

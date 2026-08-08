@@ -1,18 +1,46 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useStore } from "@/context/StoreContext";
 import { calcCartTotals } from "@/lib/cart";
 import CartItemRow from "@/components/cart/CartItemRow";
 import OrderSummary from "@/components/cart/OrderSummary";
 import { ArrowLeftIcon, CartIcon } from "@/components/ui/icons";
+import {
+  calcDiscountForSubtotal,
+  getStoredPromo,
+  setStoredPromo,
+  type PromoValidation,
+} from "@/lib/api/promo";
 
 export default function CartPage() {
   const { cart, updateQty, removeFromCart } = useStore();
+  const [appliedPromo, setAppliedPromo] = useState<PromoValidation | null>(() =>
+    getStoredPromo(),
+  );
 
-  const { subtotal, taxes, total } = useMemo(() => {
-    const sub = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-    return calcCartTotals(sub);
-  }, [cart]);
+  const subtotal = useMemo(
+    () => cart.reduce((sum, item) => sum + item.price * item.qty, 0),
+    [cart],
+  );
+
+  useEffect(() => {
+    if (!appliedPromo) return;
+    const nextDiscount = calcDiscountForSubtotal(subtotal, appliedPromo);
+    if (
+      appliedPromo.discount === nextDiscount &&
+      appliedPromo.subtotal === subtotal
+    ) {
+      return;
+    }
+    const updated = { ...appliedPromo, discount: nextDiscount, subtotal };
+    setStoredPromo(updated);
+    setAppliedPromo(updated);
+  }, [subtotal, appliedPromo]);
+
+  const { taxes, total, discount } = useMemo(
+    () => calcCartTotals(subtotal, calcDiscountForSubtotal(subtotal, appliedPromo)),
+    [subtotal, appliedPromo],
+  );
 
   return (
     <div className="page-shell">
@@ -53,7 +81,14 @@ export default function CartPage() {
           </div>
 
           <div className="lg:col-span-1">
-            <OrderSummary subtotal={subtotal} taxes={taxes} total={total} />
+            <OrderSummary
+              subtotal={subtotal}
+              taxes={taxes}
+              total={total}
+              discount={discount}
+              appliedPromo={appliedPromo}
+              onPromoChange={setAppliedPromo}
+            />
           </div>
         </section>
       ) : (

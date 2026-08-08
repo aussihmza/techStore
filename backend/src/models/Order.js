@@ -53,6 +53,8 @@ const orderSchema = new mongoose.Schema(
       validate: [(v) => v.length > 0, "Order must have at least one item"],
     },
     subtotal: { type: Number, required: true, min: 0 },
+    discount: { type: Number, default: 0, min: 0 },
+    promoCode: { type: String, default: null, trim: true, uppercase: true },
     taxes: { type: Number, required: true, min: 0 },
     total: { type: Number, required: true, min: 0 },
     shipping: { type: shippingSchema, required: true },

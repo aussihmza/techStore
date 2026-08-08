@@ -4,6 +4,11 @@ import { useStore } from "@/context/StoreContext";
 import { calcCartTotals } from "@/lib/cart";
 import { createCheckoutSessionApi } from "@/lib/api/payments";
 import { ApiError } from "@/lib/api/client";
+import {
+  calcDiscountForSubtotal,
+  clearStoredPromo,
+  getStoredPromo,
+} from "@/lib/api/promo";
 import type { ShippingInfo } from "@/types/order";
 import type { PaymentMethodOption } from "@/lib/api/orders";
 import CheckoutOrderSummary from "@/components/checkout/CheckoutOrderSummary";
@@ -36,11 +41,12 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [placedOrderId, setPlacedOrderId] = useState("");
+  const appliedPromo = getStoredPromo();
 
-  const { subtotal, taxes, total } = useMemo(() => {
+  const { subtotal, taxes, total, discount } = useMemo(() => {
     const sub = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-    return calcCartTotals(sub);
-  }, [cart]);
+    return calcCartTotals(sub, calcDiscountForSubtotal(sub, appliedPromo));
+  }, [cart, appliedPromo]);
 
   if (cart.length === 0 && !successOpen) {
     return <Navigate to="/cart" replace />;
@@ -52,24 +58,27 @@ export default function CheckoutPage() {
     setLoading(true);
 
     const shipping = readShipping(e.currentTarget);
+    const promoCode = appliedPromo?.code || null;
 
     try {
       if (paymentMethod === "card") {
-        const session = await createCheckoutSessionApi(shipping);
+        const session = await createCheckoutSessionApi(shipping, promoCode);
         if (!session.url) {
           throw new Error("Stripe checkout URL missing");
         }
+        clearStoredPromo();
         window.location.href = session.url;
         return;
       }
 
-      const result = await placeOrder(shipping, "cod");
+      const result = await placeOrder(shipping, "cod", promoCode);
       if (!result.ok) {
         setError(result.error);
         setLoading(false);
         return;
       }
 
+      clearStoredPromo();
       setPlacedOrderId(result.order.id);
       setSuccessOpen(true);
       setLoading(false);
@@ -170,6 +179,8 @@ export default function CheckoutPage() {
             subtotal={subtotal}
             taxes={taxes}
             total={total}
+            discount={discount}
+            promoCode={appliedPromo?.code}
             submitting={loading}
             submitLabel={
               paymentMethod === "card" ? "Pay with Card" : "Place Order"

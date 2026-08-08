@@ -64,6 +64,8 @@ export function toOrderResponse(order) {
     orderId: doc.orderId,
     items: doc.items.map(toCartItemResponse),
     subtotal: doc.subtotal,
+    discount: doc.discount || 0,
+    promoCode: doc.promoCode || null,
     taxes: doc.taxes,
     total: doc.total,
     shipping: doc.shipping,
@@ -76,11 +78,18 @@ export function toOrderResponse(order) {
   };
 }
 
-export function calcCartTotals(subtotal) {
-  const taxes = Math.round(subtotal * TAX_RATE * 100) / 100;
-  const total = Math.round((subtotal + taxes) * 100) / 100;
+export function calcCartTotals(subtotal, discount = 0) {
+  const safeSubtotal = Math.round(Math.max(0, Number(subtotal) || 0) * 100) / 100;
+  const safeDiscount = Math.min(
+    safeSubtotal,
+    Math.round(Math.max(0, Number(discount) || 0) * 100) / 100
+  );
+  const taxable = Math.round((safeSubtotal - safeDiscount) * 100) / 100;
+  const taxes = Math.round(taxable * TAX_RATE * 100) / 100;
+  const total = Math.round((taxable + taxes) * 100) / 100;
   return {
-    subtotal: Math.round(subtotal * 100) / 100,
+    subtotal: safeSubtotal,
+    discount: safeDiscount,
     taxes,
     total,
   };

@@ -28,10 +28,11 @@ export const getOrderByIdApi = createCachedRequest(
 export async function placeOrderApi(
   shipping: ShippingInfo,
   paymentMethod: PaymentMethodOption = "cod",
+  promoCode?: string | null,
 ) {
   const data = await apiRequest<{ order: PlacedOrder }>("/orders", {
     method: "POST",
-    body: JSON.stringify({ shipping, paymentMethod }),
+    body: JSON.stringify({ shipping, paymentMethod, promoCode: promoCode || undefined }),
   });
   getOrdersApi.invalidateAll();
   getOrderByIdApi.invalidateAll();

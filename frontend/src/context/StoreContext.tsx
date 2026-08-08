@@ -30,6 +30,7 @@ import {
   type PaymentMethodOption,
 } from "@/lib/api/orders";
 import { completeCheckoutSessionApi } from "@/lib/api/payments";
+import { clearStoredPromo } from "@/lib/api/promo";
 import { bootstrapSession, resetSessionBootstrap } from "@/lib/api/session";
 import { clearLegacyStorage, getToken, setToken } from "@/lib/api/token";
 
@@ -77,6 +78,7 @@ interface StoreContextValue {
   placeOrder: (
     shipping: ShippingInfo,
     paymentMethod?: PaymentMethodOption,
+    promoCode?: string | null,
   ) => Promise<OrderResult>;
   completeCardCheckout: (sessionId: string) => Promise<OrderResult>;
   findOrder: (orderId: string) => Promise<PlacedOrder | null>;
@@ -336,6 +338,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     async (
       shipping: ShippingInfo,
       paymentMethod: PaymentMethodOption = "cod",
+      promoCode?: string | null,
     ): Promise<OrderResult> => {
       if (!user) {
         setLoginPromptOpen(true);
@@ -343,7 +346,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const data = await placeOrderApi(shipping, paymentMethod);
+        const data = await placeOrderApi(shipping, paymentMethod, promoCode);
         setOrders((prev) => [data.order, ...prev]);
         setLastOrder(data.order);
         setCart([]);
@@ -373,6 +376,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setLastOrder(data.order);
         getCartApi.invalidateAll();
         setCart([]);
+        clearStoredPromo();
         return { ok: true, order: data.order };
       } catch (error) {
         return {
