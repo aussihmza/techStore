@@ -1,12 +1,14 @@
 import { apiRequest } from "@/lib/api/client";
 import { createCachedRequest } from "@/lib/api/cache";
-import type { Product, ProductDetail } from "@/types/product";
+import type { Product, ProductDetail, StorageOption } from "@/types/product";
+import { normalizeStorageOptions } from "@/user/lib/storageOptions";
 
 export type ApiProduct = Product &
   ProductDetail & {
     slug?: string;
     isFeatured?: boolean;
     isShop?: boolean;
+    storageOptions?: StorageOption[] | string[];
   };
 
 export interface ProductsData {
@@ -68,7 +70,10 @@ export function toProductDetail(product: ApiProduct): ProductDetail {
   return {
     description: product.description ?? "",
     colors: [],
-    storageOptions: product.storageOptions ?? [],
+    storageOptions: normalizeStorageOptions(
+      product.storageOptions,
+      product.price,
+    ),
     gallery: product.gallery?.length ? product.gallery : [product.image],
     features: product.features ?? [],
   };

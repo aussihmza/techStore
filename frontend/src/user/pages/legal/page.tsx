@@ -63,7 +63,7 @@ const sections = [
       },
       {
         heading: "Managing cookies",
-        body: "You can control or delete cookies through your browser settings. Blocking essential cookies may limit site functionality (for example, keeping items in your cart). Where required, we ask for consent before enabling non-essential cookies.",
+        body: "On your first visit we show a cookie banner. “Accept all” enables analytics (for example Google Analytics when configured). “Essentials only” keeps cart and checkout working without analytics scripts. You can also control or delete cookies in your browser settings. Blocking essential cookies may limit site functionality.",
       },
       {
         heading: "Updates",

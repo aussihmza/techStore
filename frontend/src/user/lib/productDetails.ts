@@ -292,6 +292,15 @@ const STORAGE_PRESETS: Record<string, string[]> = {
   Storage: ["1TB", "2TB", "4TB"],
 };
 
+function priceStorageLabels(labels: string[], basePrice: number) {
+  const base = Math.round(Math.max(0, basePrice) * 100) / 100;
+  const step = Math.max(50, Math.round(base * 0.1));
+  return labels.map((label, index) => ({
+    label,
+    price: Math.round((base + index * step) * 100) / 100,
+  }));
+}
+
 const DETAIL_OVERRIDES: Record<string, Partial<ProductDetail>> = {
   "shop-iphone-15-pro-max": {
     description:
@@ -352,7 +361,9 @@ function buildGallery(product: Product): string[] {
 
 export function getProductDetail(product: Product): ProductDetail {
   const override = DETAIL_OVERRIDES[product.id] ?? {};
-  const storageOptions = STORAGE_PRESETS[product.category] ?? [];
+  const labels = STORAGE_PRESETS[product.category] ?? [];
+  const storageOptions =
+    override.storageOptions ?? priceStorageLabels(labels, product.price);
   const features = FEATURE_PRESETS[product.category] ?? FEATURE_PRESETS.Accessories;
 
   return {
@@ -360,7 +371,7 @@ export function getProductDetail(product: Product): ProductDetail {
       override.description ??
       `${product.name} by ${product.brand}. Premium ${product.category.toLowerCase()} engineered for everyday performance, refined design, and lasting reliability.`,
     colors: [],
-    storageOptions: override.storageOptions ?? storageOptions,
+    storageOptions,
     gallery: override.gallery ?? buildGallery(product),
     features: override.features ?? features,
   };

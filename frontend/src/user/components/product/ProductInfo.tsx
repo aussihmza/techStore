@@ -21,9 +21,12 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
   const [storageIndex, setStorageIndex] = useState(0);
 
   const selectedStorage = detail.storageOptions[storageIndex] || null;
+  const displayPrice = selectedStorage?.price ?? product.price;
+  const basePrice = detail.storageOptions[0]?.price ?? product.price;
+
   const lineId = useMemo(
-    () => buildCartLineId(product.id, null, selectedStorage),
-    [product.id, selectedStorage],
+    () => buildCartLineId(product.id, null, selectedStorage?.label || null),
+    [product.id, selectedStorage?.label],
   );
 
   const cartLine = cart.find((line) => line.id === lineId);
@@ -41,7 +44,7 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
             : "NEW ARRIVAL";
 
   const variantOptions = {
-    storage: selectedStorage || null,
+    storage: selectedStorage?.label || null,
   };
 
   const handleAdd = () => addToCart(product, variantOptions);
@@ -52,7 +55,7 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
         returnTo: `/product/${product.id}`,
         action: "buyNow",
         productId: product.id,
-        storage: selectedStorage,
+        storage: selectedStorage?.label || null,
       });
       openLoginPrompt();
       return;
@@ -102,8 +105,16 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
 
       <div className="mt-6">
         <p className="font-display text-3xl font-extrabold text-brand sm:text-4xl">
-          {formatPrice(product.price)}
+          {formatPrice(displayPrice)}
         </p>
+        {selectedStorage && displayPrice !== basePrice ? (
+          <p className="mt-1 text-sm text-slate-500">
+            {selectedStorage.label} ·{" "}
+            {displayPrice > basePrice
+              ? `+${formatPrice(displayPrice - basePrice)} vs base`
+              : formatPrice(displayPrice)}
+          </p>
+        ) : null}
       </div>
 
       {detail.storageOptions.length > 0 && (
@@ -114,17 +125,24 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
           <div className="mt-3 flex flex-wrap gap-3">
             {detail.storageOptions.map((option, i) => (
               <button
-                key={option}
+                key={option.label}
                 type="button"
                 aria-pressed={storageIndex === i}
                 onClick={() => setStorageIndex(i)}
-                className={`min-w-[5.5rem] rounded-xl border-2 px-4 py-2.5 text-sm font-semibold transition-colors ${
+                className={`min-w-[6.5rem] rounded-xl border-2 px-4 py-2.5 text-left text-sm font-semibold transition-colors ${
                   storageIndex === i
                     ? "border-brand bg-brand/5 text-brand"
                     : "border-slate-200 text-slate-600 hover:border-slate-300"
                 }`}
               >
-                {option}
+                <span className="block">{option.label}</span>
+                <span
+                  className={`mt-0.5 block text-xs font-medium ${
+                    storageIndex === i ? "text-brand/80" : "text-slate-400"
+                  }`}
+                >
+                  {formatPrice(option.price)}
+                </span>
               </button>
             ))}
           </div>

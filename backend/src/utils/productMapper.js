@@ -1,3 +1,6 @@
+import { STORAGE_PRESETS } from "../migrations/data/productDetails.js";
+import { normalizeStorageOptions } from "./storageOptions.js";
+
 /** Maps shop filter keys → product.category values (frontend CATEGORY_MAP) */
 export const CATEGORY_MAP = {
   Laptops: ["Laptops"],
@@ -9,8 +12,18 @@ export const CATEGORY_MAP = {
   Accessories: ["Accessories", "Storage"],
 };
 
+function resolveStorageOptions(doc) {
+  const existing = normalizeStorageOptions(doc.storageOptions, doc.price);
+  if (existing.length > 0) return existing;
+  const presets = STORAGE_PRESETS[doc.category] || [];
+  return normalizeStorageOptions(presets, doc.price);
+}
+
 export function toProductResponse(product) {
   const doc = typeof product.toObject === "function" ? product.toObject() : product;
+  const storageOptions = resolveStorageOptions(doc);
+  const listPrice =
+    storageOptions.length > 0 ? storageOptions[0].price : doc.price;
 
   return {
     id: doc.slug,
@@ -19,14 +32,14 @@ export function toProductResponse(product) {
     name: doc.name,
     category: doc.category,
     brand: doc.brand,
-    price: doc.price,
+    price: listPrice,
     rating: doc.rating,
     reviews: doc.reviews,
     image: doc.image,
     badge: doc.badge,
     description: doc.description,
     colors: [],
-    storageOptions: doc.storageOptions,
+    storageOptions,
     gallery: doc.gallery,
     features: doc.features,
     isFeatured: doc.isFeatured,

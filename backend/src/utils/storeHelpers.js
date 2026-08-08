@@ -2,6 +2,12 @@ import { Product } from "../models/Product.js";
 import { Cart } from "../models/Cart.js";
 import { Wishlist } from "../models/Wishlist.js";
 import { ApiError } from "./ApiError.js";
+import { STORAGE_PRESETS } from "../migrations/data/productDetails.js";
+import {
+  findStorageOption,
+  getStorageLabel,
+  normalizeStorageOptions,
+} from "./storageOptions.js";
 
 export const TAX_RATE = 0.08;
 
@@ -15,25 +21,29 @@ export function normalizeVariantToken(value = "") {
 
 export function buildLineId(productSlug, colorName = "", storage = "") {
   const color = normalizeVariantToken(colorName) || "default";
-  const storageToken = normalizeVariantToken(storage) || "default";
+  const storageLabel = getStorageLabel(storage) || storage || "";
+  const storageToken = normalizeVariantToken(storageLabel) || "default";
   return `${productSlug}__${color}__${storageToken}`;
 }
 
 export function resolveProductVariants(product, _colorName, storageOption) {
   // Color options intentionally disabled for the catalog
   const selectedColor = null;
-  const storageOptions = Array.isArray(product.storageOptions)
-    ? product.storageOptions
-    : [];
+  let storageOptions = normalizeStorageOptions(
+    product.storageOptions,
+    product.price,
+  );
+  if (storageOptions.length === 0) {
+    storageOptions = normalizeStorageOptions(
+      STORAGE_PRESETS[product.category] || [],
+      product.price,
+    );
+  }
 
   let selectedStorage = null;
   if (storageOptions.length > 0) {
     if (storageOption) {
-      selectedStorage = storageOptions.find(
-        (option) =>
-          String(option).toLowerCase() ===
-          String(storageOption).trim().toLowerCase(),
-      );
+      selectedStorage = findStorageOption(storageOptions, storageOption);
       if (!selectedStorage) {
         throw new ApiError(
           400,
@@ -50,11 +60,13 @@ export function resolveProductVariants(product, _colorName, storageOption) {
 
 export function productToLineItem(product, qty = 1, variants = {}) {
   const { selectedColor = null, selectedStorage = null } = variants;
-  const lineId = buildLineId(
-    product.slug,
-    selectedColor?.name,
-    selectedStorage,
-  );
+  const storageLabel = getStorageLabel(selectedStorage);
+  const unitPrice =
+    selectedStorage && typeof selectedStorage === "object" && selectedStorage.price != null
+      ? Number(selectedStorage.price)
+      : product.price;
+
+  const lineId = buildLineId(product.slug, selectedColor?.name, storageLabel);
 
   return {
     lineId,
@@ -62,7 +74,7 @@ export function productToLineItem(product, qty = 1, variants = {}) {
     name: product.name,
     category: product.category,
     brand: product.brand,
-    price: product.price,
+    price: unitPrice,
     rating: product.rating,
     reviews: product.reviews,
     image: product.image,
@@ -71,7 +83,7 @@ export function productToLineItem(product, qty = 1, variants = {}) {
     selectedColor: selectedColor
       ? { name: selectedColor.name, hex: selectedColor.hex }
       : null,
-    selectedStorage: selectedStorage || null,
+    selectedStorage: storageLabel,
   };
 }
 

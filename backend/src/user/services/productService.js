@@ -7,7 +7,19 @@ import {
   getProductSort,
   toProductResponse,
 } from "../../utils/productMapper.js";
+import { parseStorageOptionsInput } from "../../utils/storageOptions.js";
 import { syncProductRating } from "./reviewService.js";
+
+function withNormalizedStorage(payload = {}) {
+  const next = { ...payload };
+  if (next.storageOptions != null) {
+    next.storageOptions = parseStorageOptionsInput(
+      next.storageOptions,
+      next.price,
+    );
+  }
+  return next;
+}
 
 async function findProductByParam(idOrSlug) {
   if (mongoose.Types.ObjectId.isValid(idOrSlug)) {
@@ -78,7 +90,7 @@ export const productService = {
       throw new ApiError(409, "Product with this slug already exists");
     }
 
-    const product = await Product.create(payload);
+    const product = await Product.create(withNormalizedStorage(payload));
     return { product: toProductResponse(product) };
   },
 
@@ -89,7 +101,7 @@ export const productService = {
       throw new ApiError(404, "Product not found");
     }
 
-    const updates = { ...body };
+    const updates = withNormalizedStorage({ ...body });
     delete updates._id;
 
     Object.assign(product, updates);

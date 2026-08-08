@@ -7,6 +7,10 @@ import {
 } from "@/admin/api/admin";
 import type { ApiProduct } from "@/user/api/products";
 import { ApiError } from "@/lib/api/client";
+import {
+  formatStorageOptionsInput,
+  normalizeStorageOptions,
+} from "@/user/lib/storageOptions";
 
 type FormState = {
   slug: string;
@@ -16,6 +20,7 @@ type FormState = {
   price: string;
   image: string;
   description: string;
+  storageOptions: string;
   isShop: boolean;
   isFeatured: boolean;
 };
@@ -28,6 +33,7 @@ const emptyForm: FormState = {
   price: "",
   image: "",
   description: "",
+  storageOptions: "",
   isShop: true,
   isFeatured: false,
 };
@@ -65,6 +71,7 @@ export default function AdminProductsPage() {
 
   const startEdit = (product: ApiProduct) => {
     setEditingId(product.id);
+    const priced = normalizeStorageOptions(product.storageOptions, product.price);
     setForm({
       slug: product.id,
       name: product.name,
@@ -73,6 +80,7 @@ export default function AdminProductsPage() {
       price: String(product.price),
       image: product.image,
       description: product.description || "",
+      storageOptions: formatStorageOptionsInput(priced),
       isShop: Boolean(product.isShop),
       isFeatured: Boolean(product.isFeatured),
     });
@@ -95,6 +103,7 @@ export default function AdminProductsPage() {
       price: Number(form.price),
       image: form.image.trim(),
       description: form.description.trim(),
+      storageOptions: form.storageOptions.trim(),
       isShop: form.isShop,
       isFeatured: form.isFeatured,
       gallery: form.image.trim() ? [form.image.trim()] : [],
@@ -181,6 +190,23 @@ export default function AdminProductsPage() {
             rows={3}
             className="w-full rounded-xl border border-slate-200 px-3 py-2"
           />
+        </label>
+        <label className="text-sm sm:col-span-2">
+          <span className="mb-1 block font-medium text-slate-600">
+            Storage / size SKUs
+          </span>
+          <input
+            type="text"
+            value={form.storageOptions}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, storageOptions: e.target.value }))
+            }
+            placeholder="128GB:999, 256GB:1099, 512GB:1299"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2"
+          />
+          <span className="mt-1 block text-xs text-slate-400">
+            Format: Label:Price, comma-separated. Leave empty for no variants.
+          </span>
         </label>
         <label className="flex items-center gap-2 text-sm">
           <input

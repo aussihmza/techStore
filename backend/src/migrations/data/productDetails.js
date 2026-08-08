@@ -273,6 +273,7 @@ export const FEATURE_PRESETS = {
   ],
 };
 
+/** Labels only — prices applied from product.price in buildProductDetails. */
 export const STORAGE_PRESETS = {
   Smartphones: ["128GB", "256GB", "512GB"],
   Laptops: ["512GB", "1TB", "2TB"],
@@ -284,6 +285,15 @@ export const STORAGE_PRESETS = {
   Accessories: [],
   Storage: ["1TB", "2TB", "4TB"],
 };
+
+function priceStorageOptions(labels, basePrice) {
+  const base = Math.round(Math.max(0, Number(basePrice) || 0) * 100) / 100;
+  const step = Math.max(50, Math.round(base * 0.1));
+  return (labels || []).map((label, index) => ({
+    label,
+    price: Math.round((base + index * step) * 100) / 100,
+  }));
+}
 
 export const DETAIL_OVERRIDES = {
   "shop-iphone-15-pro-max": {
@@ -310,7 +320,9 @@ export const DETAIL_OVERRIDES = {
 
 export function buildProductDetails(product, allProducts) {
   const override = DETAIL_OVERRIDES[product.slug] ?? {};
-  const storageOptions = STORAGE_PRESETS[product.category] ?? [];
+  const labels = STORAGE_PRESETS[product.category] ?? [];
+  const storageOptions =
+    override.storageOptions ?? priceStorageOptions(labels, product.price);
   const features = FEATURE_PRESETS[product.category] ?? FEATURE_PRESETS.Accessories;
 
   const sameCategory = allProducts
@@ -327,7 +339,7 @@ export function buildProductDetails(product, allProducts) {
       override.description ??
       `${product.name} by ${product.brand}. Premium ${product.category.toLowerCase()} engineered for everyday performance, refined design, and lasting reliability.`,
     colors: [],
-    storageOptions: override.storageOptions ?? storageOptions,
+    storageOptions,
     gallery: (override.gallery ?? gallery).slice(0, 4),
     features: override.features ?? features,
   };

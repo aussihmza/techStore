@@ -1,39 +1,24 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
-const STORAGE_KEY = "techstore_cookie_consent";
-
-type ConsentValue = "accepted" | "essential";
-
-function readConsent(): ConsentValue | null {
-  try {
-    const value = localStorage.getItem(STORAGE_KEY);
-    if (value === "accepted" || value === "essential") return value;
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-function saveConsent(value: ConsentValue) {
-  try {
-    localStorage.setItem(STORAGE_KEY, value);
-  } catch {
-    // ignore storage failures
-  }
-}
+import {
+  readCookieConsent,
+  saveCookieConsent,
+  type ConsentValue,
+} from "@/user/lib/cookieConsent";
+import { syncAnalyticsWithConsent } from "@/user/lib/analytics";
 
 export default function CookieConsent() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    setVisible(!readConsent());
+    setVisible(!readCookieConsent());
   }, []);
 
   if (!visible) return null;
 
   const choose = (value: ConsentValue) => {
-    saveConsent(value);
+    saveCookieConsent(value);
+    syncAnalyticsWithConsent(value);
     setVisible(false);
   };
 
@@ -48,8 +33,10 @@ export default function CookieConsent() {
         <div className="min-w-0 flex-1">
           <p className="font-display text-base font-bold text-ink">We use cookies</p>
           <p className="mt-1 text-sm leading-relaxed text-slate-500">
-            Essential cookies keep cart and checkout working. You can accept all cookies or continue
-            with essentials only. Read our{" "}
+            Essential cookies keep cart and checkout working.{" "}
+            <strong className="font-semibold text-slate-600">Accept all</strong> also
+            enables analytics so we can improve the store. Essentials only skips
+            analytics. Read our{" "}
             <Link
               to="/legal#cookie-policy"
               className="font-semibold text-brand hover:underline"

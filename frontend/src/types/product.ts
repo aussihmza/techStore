@@ -24,10 +24,15 @@ export interface ProductFeature {
   icon?: "chip" | "shield" | "island" | "camera" | "battery" | "sound" | "display" | "speed";
 }
 
+export interface StorageOption {
+  label: string;
+  price: number;
+}
+
 export interface ProductDetail {
   description: string;
   colors: ProductColor[];
-  storageOptions: string[];
+  storageOptions: StorageOption[];
   gallery: string[];
   features: ProductFeature[];
 }

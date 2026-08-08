@@ -25,6 +25,14 @@ const productFeatureSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const storageOptionSchema = new mongoose.Schema(
+  {
+    label: { type: String, required: true, trim: true },
+    price: { type: Number, required: true, min: 0 },
+  },
+  { _id: false }
+);
+
 const productSchema = new mongoose.Schema(
   {
     // Frontend Product.id (slug)
@@ -49,7 +57,8 @@ const productSchema = new mongoose.Schema(
     // Frontend ProductDetail
     description: { type: String, default: "" },
     colors: { type: [productColorSchema], default: [] },
-    storageOptions: { type: [String], default: [] },
+    /** SKU variants: [{ label: "256GB", price: 1099 }] (legacy string[] still accepted in APIs) */
+    storageOptions: { type: [storageOptionSchema], default: [] },
     gallery: { type: [String], default: [] },
     features: { type: [productFeatureSchema], default: [] },
     monthlyPrice: { type: Number, min: 0 },

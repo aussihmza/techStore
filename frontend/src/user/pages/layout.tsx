@@ -4,6 +4,7 @@ import Footer from "@/user/components/layout/Footer";
 import LoginRequiredModal from "@/user/components/auth/LoginRequiredModal";
 import StripeReturnHandler from "@/user/components/checkout/StripeReturnHandler";
 import CookieConsent from "@/user/components/layout/CookieConsent";
+import AnalyticsBoot from "@/user/components/layout/AnalyticsBoot";
 
 export default function Layout() {
   return (
@@ -19,6 +20,7 @@ export default function Layout() {
       <Footer />
       <LoginRequiredModal />
       <StripeReturnHandler />
+      <AnalyticsBoot />
       <CookieConsent />
     </div>
   );
