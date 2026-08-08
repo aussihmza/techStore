@@ -1,11 +1,19 @@
 import { Link } from "react-router-dom";
 import { useStore } from "@/context/StoreContext";
+import { clearAuthReturn, peekAuthReturn } from "@/lib/authRedirect";
 import { UserIcon } from "@/components/ui/icons";
 
 export default function LoginRequiredModal() {
   const { loginPromptOpen, closeLoginPrompt } = useStore();
+  const intent = loginPromptOpen ? peekAuthReturn() : null;
+  const isBuyNow = intent?.action === "buyNow";
 
   if (!loginPromptOpen) return null;
+
+  const dismiss = () => {
+    clearAuthReturn();
+    closeLoginPrompt();
+  };
 
   return (
     <div
@@ -13,7 +21,7 @@ export default function LoginRequiredModal() {
       role="dialog"
       aria-modal="true"
       aria-labelledby="login-required-title"
-      onClick={closeLoginPrompt}
+      onClick={dismiss}
     >
       <div
         className="w-full max-w-md animate-fade-up rounded-[1.5rem] border border-white/70 bg-white/95 p-8 shadow-2xl backdrop-blur-xl"
@@ -27,10 +35,12 @@ export default function LoginRequiredModal() {
           id="login-required-title"
           className="font-display mt-5 text-2xl font-extrabold text-ink"
         >
-          You are not logged in
+          {isBuyNow ? "Log in to checkout" : "You are not logged in"}
         </h2>
         <p className="section-sub mt-2 text-base">
-          Please log in first to use wishlist and cart features.
+          {isBuyNow
+            ? "Sign in and we’ll take you straight to checkout with this item."
+            : "Please log in first to use wishlist and cart features."}
         </p>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -39,7 +49,7 @@ export default function LoginRequiredModal() {
           </Link>
           <button
             type="button"
-            onClick={closeLoginPrompt}
+            onClick={dismiss}
             className="btn-secondary flex-1"
           >
             Cancel

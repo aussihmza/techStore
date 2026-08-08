@@ -41,7 +41,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const goProtected = (path: string) => {
-    if (!requireAuth()) return;
+    if (!requireAuth(path)) return;
     navigate(path);
   };
 

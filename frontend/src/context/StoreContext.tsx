@@ -33,6 +33,11 @@ import { completeCheckoutSessionApi } from "@/lib/api/payments";
 import { clearStoredPromo } from "@/lib/api/promo";
 import { bootstrapSession, resetSessionBootstrap } from "@/lib/api/session";
 import { clearLegacyStorage, getToken, setToken } from "@/lib/api/token";
+import {
+  consumeAuthReturn,
+  getSafeReturnPath,
+  setAuthReturn,
+} from "@/lib/authRedirect";
 
 export type { CartLine };
 
@@ -65,9 +70,11 @@ interface StoreContextValue {
   login: (email: string, password: string) => Promise<AuthResult>;
   loginWithGoogle: (idToken: string) => Promise<AuthResult>;
   logout: () => Promise<void>;
-  requireAuth: () => boolean;
+  requireAuth: (returnTo?: string) => boolean;
   openLoginPrompt: () => void;
   closeLoginPrompt: () => void;
+  /** After login/signup: run pending Buy Now (if any) and return destination path. */
+  resumePendingAuthAction: () => Promise<string>;
   isWishlisted: (id: string) => boolean;
   toggleWishlist: (product: Product) => Promise<void>;
   removeFromWishlist: (id: string) => Promise<void>;
@@ -165,11 +172,41 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const openLoginPrompt = useCallback(() => setLoginPromptOpen(true), []);
   const closeLoginPrompt = useCallback(() => setLoginPromptOpen(false), []);
 
-  const requireAuth = useCallback(() => {
+  const requireAuth = useCallback((returnTo?: string) => {
     if (user) return true;
+    const path =
+      returnTo ||
+      (typeof window !== "undefined"
+        ? `${window.location.pathname}${window.location.search}`
+        : "/");
+    setAuthReturn({ returnTo: getSafeReturnPath(path) });
     setLoginPromptOpen(true);
     return false;
   }, [user]);
+
+  const resumePendingAuthAction = useCallback(async () => {
+    const intent = consumeAuthReturn();
+    if (!intent) return "/";
+
+    if (intent.action === "buyNow" && intent.productId) {
+      try {
+        const data = await addCartItemApi(intent.productId, {
+          qty: 1,
+          storage: intent.storage || undefined,
+        });
+        setCart(data.items);
+        return "/checkout";
+      } catch (error) {
+        console.error(toErrorMessage(error, "Buy Now after login failed"));
+        return getSafeReturnPath(
+          intent.returnTo,
+          `/product/${intent.productId}`,
+        );
+      }
+    }
+
+    return getSafeReturnPath(intent.returnTo);
+  }, []);
 
   const signup = useCallback(
     async (input: { name: string; email: string; password: string }) => {
@@ -250,7 +287,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const toggleWishlist = useCallback(
     async (product: Product) => {
       if (!user) {
-        setLoginPromptOpen(true);
+        requireAuth();
         return;
       }
       try {
@@ -260,7 +297,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         console.error(toErrorMessage(error, "Wishlist update failed"));
       }
     },
-    [user],
+    [user, requireAuth],
   );
 
   const removeFromWishlist = useCallback(
@@ -285,7 +322,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       options?: { color?: string | null; storage?: string | null },
     ) => {
       if (!user) {
-        setLoginPromptOpen(true);
+        requireAuth();
         return;
       }
       try {
@@ -299,7 +336,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         console.error(toErrorMessage(error, "Add to cart failed"));
       }
     },
-    [user],
+    [user, requireAuth],
   );
 
   const updateQty = useCallback(
@@ -437,6 +474,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       requireAuth,
       openLoginPrompt,
       closeLoginPrompt,
+      resumePendingAuthAction,
       isWishlisted: (id) => wishlist.some((p) => p.id === id),
       toggleWishlist,
       removeFromWishlist,
@@ -460,6 +498,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     login,
     loginWithGoogle,
     logout,
+    resumePendingAuthAction,
     requireAuth,
     openLoginPrompt,
     closeLoginPrompt,

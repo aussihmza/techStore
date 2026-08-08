@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import AuthShell, { AuthField, authInputClass } from "@/components/auth/AuthShell";
 import { useStore } from "@/context/StoreContext";
 import {
@@ -9,15 +9,22 @@ import {
 
 export default function SignupPage() {
   const navigate = useNavigate();
-  const { signup, isLoggedIn, authReady } = useStore();
+  const { signup, isLoggedIn, authReady, resumePendingAuthAction } = useStore();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const redirectedRef = useRef(false);
 
-  if (authReady && isLoggedIn) return <Navigate to="/" replace />;
+  useEffect(() => {
+    if (!authReady || !isLoggedIn || redirectedRef.current) return;
+    redirectedRef.current = true;
+    void resumePendingAuthAction().then((path) => {
+      navigate(path, { replace: true });
+    });
+  }, [authReady, isLoggedIn, resumePendingAuthAction, navigate]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -43,10 +50,13 @@ export default function SignupPage() {
 
     if (!result.ok) {
       setError(result.error);
-      return;
     }
-    navigate("/");
+    // Redirect handled by effect after session is applied.
   };
+
+  if (authReady && isLoggedIn) {
+    return <p className="py-16 text-center text-slate-500">Taking you back...</p>;
+  }
 
   return (
     <AuthShell

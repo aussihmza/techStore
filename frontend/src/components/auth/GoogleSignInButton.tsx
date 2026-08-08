@@ -1,10 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 import { useStore } from "@/context/StoreContext";
 
 export default function GoogleSignInButton() {
-  const navigate = useNavigate();
   const { loginWithGoogle } = useStore();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,8 +24,7 @@ export default function GoogleSignInButton() {
       setError(result.error);
       return;
     }
-
-    navigate("/", { replace: true });
+    // Login/Signup page effect runs resumePendingAuthAction + navigate.
   };
 
   if (!clientId) {

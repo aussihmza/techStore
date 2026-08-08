@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import type { Product, ProductDetail } from "@/types/product";
 import { useStore } from "@/context/StoreContext";
+import { setAuthReturn } from "@/lib/authRedirect";
 import { buildCartLineId } from "@/lib/variants";
 import { CartIcon, MinusIcon, PlusIcon, ShieldIcon, StarIcon, TrashIcon, TruckIcon } from "@/components/ui/icons";
 
@@ -14,7 +15,8 @@ const formatPrice = (value: number) =>
   `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export default function ProductInfo({ product, detail }: ProductInfoProps) {
-  const { cart, addToCart, updateQty, removeFromCart } = useStore();
+  const { cart, addToCart, updateQty, removeFromCart, isLoggedIn, openLoginPrompt } =
+    useStore();
   const navigate = useNavigate();
   const [storageIndex, setStorageIndex] = useState(0);
 
@@ -45,6 +47,16 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
   const handleAdd = () => addToCart(product, variantOptions);
 
   const handleBuyNow = async () => {
+    if (!isLoggedIn) {
+      setAuthReturn({
+        returnTo: `/product/${product.id}`,
+        action: "buyNow",
+        productId: product.id,
+        storage: selectedStorage,
+      });
+      openLoginPrompt();
+      return;
+    }
     if (!cartLine) await addToCart(product, variantOptions);
     navigate("/checkout");
   };
