@@ -1,20 +1,43 @@
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { navLinks } from "@/lib/products";
 import { useStore } from "@/context/StoreContext";
 import SearchBar from "@/components/layout/SearchBar";
 import { CartIcon, HeartIcon, UserIcon } from "@/components/ui/icons";
 
+const AVATAR_COLORS = [
+  "#2563EB",
+  "#0D9488",
+  "#7C3AED",
+  "#DB2777",
+  "#EA580C",
+  "#059669",
+  "#4F46E5",
+  "#CA8A04",
+  "#DC2626",
+  "#0891B2",
+];
+
+function getInitials(fullName = "") {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "U";
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return `${parts[0].charAt(0)}${parts[parts.length - 1].charAt(0)}`.toUpperCase();
+}
+
+function getAvatarColor(seed = "") {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
 export default function Navbar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const {
-    wishlistCount,
-    cartCount,
-    isLoggedIn,
-    requireAuth,
-    logout,
-    user,
-  } = useStore();
+  const { wishlistCount, cartCount, isLoggedIn, requireAuth, logout, user } =
+    useStore();
 
   const goProtected = (path: string) => {
     if (!requireAuth()) return;
@@ -72,31 +95,184 @@ export default function Navbar() {
             <CartIcon className="h-6 w-6" />
           </IconButton>
 
-          {isLoggedIn ? (
-            <div className="relative group">
-              <IconButton
-                label={user?.name ? `Account: ${user.name}` : "Account"}
-                active={pathname === "/login" || pathname === "/signup"}
-                onClick={() => logout()}
-              >
-                <UserIcon className="h-6 w-6" />
-              </IconButton>
-              <span className="pointer-events-none absolute right-0 top-full z-10 mt-1 hidden whitespace-nowrap rounded-lg bg-slate-900 px-2 py-1 text-[10px] font-medium text-white group-hover:block">
-                Logout
-              </span>
-            </div>
-          ) : (
-            <IconButton
-              label="Account"
-              to="/login"
-              active={pathname === "/login" || pathname === "/signup"}
-            >
-              <UserIcon className="h-6 w-6" />
-            </IconButton>
-          )}
+          <ProfileMenu
+            isLoggedIn={isLoggedIn}
+            name={user?.name}
+            email={user?.email}
+            active={pathname === "/login" || pathname === "/signup"}
+            onLogout={async () => {
+              await logout();
+              navigate("/login");
+            }}
+          />
         </div>
       </div>
     </header>
+  );
+}
+
+interface ProfileMenuProps {
+  isLoggedIn: boolean;
+  name?: string;
+  email?: string;
+  active?: boolean;
+  onLogout: () => Promise<void>;
+}
+
+function ProfileMenu({
+  isLoggedIn,
+  name,
+  email,
+  active,
+  onLogout,
+}: ProfileMenuProps) {
+  const [open, setOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  const initials = useMemo(() => getInitials(name), [name]);
+  const avatarColor = useMemo(
+    () => getAvatarColor(email || name || "user"),
+    [email, name],
+  );
+
+  useEffect(() => {
+    if (!open) return;
+
+    const onPointerDown = (event: MouseEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await onLogout();
+    } finally {
+      setLoggingOut(false);
+      setOpen(false);
+    }
+  };
+
+  return (
+    <div className="relative" ref={rootRef}>
+      <button
+        type="button"
+        aria-label={isLoggedIn ? (name ? `Account: ${name}` : "Account") : "Account"}
+        aria-expanded={open}
+        onClick={() => setOpen((prev) => !prev)}
+        className={`rounded-full p-0.5 transition-shadow ${
+          open || active
+            ? "ring-2 ring-brand/30 ring-offset-2"
+            : "hover:ring-2 hover:ring-slate-200 hover:ring-offset-1"
+        }`}
+      >
+        {isLoggedIn ? (
+          <span
+            className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-white shadow-sm"
+            style={{ backgroundColor: avatarColor }}
+          >
+            {initials}
+          </span>
+        ) : (
+          <span
+            className={`flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-slate-50 ${
+              open || active ? "text-brand" : "text-slate-600"
+            }`}
+          >
+            <UserIcon className="h-5 w-5" />
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full z-50 mt-3 w-72 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xl shadow-slate-900/10">
+          {isLoggedIn ? (
+            <>
+              <div className="bg-gradient-to-br from-slate-50 to-white px-4 py-4">
+                <div className="flex items-center gap-3">
+                  <span
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-base font-bold text-white shadow-md"
+                    style={{ backgroundColor: avatarColor }}
+                  >
+                    {initials}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-base font-bold text-ink">
+                      {name || "User"}
+                    </p>
+                    {email ? (
+                      <p className="mt-0.5 truncate text-sm text-slate-500">
+                        {email}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-100 p-2">
+                <button
+                  type="button"
+                  disabled={loggingOut}
+                  onClick={() => void handleLogout()}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-60"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 text-rose-500">
+                    <LogoutIcon className="h-4 w-4" />
+                  </span>
+                  {loggingOut ? "Logging out..." : "Logout"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="p-2">
+              <Link
+                to="/login"
+                onClick={() => setOpen(false)}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-brand/5 hover:text-brand"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand/10 text-brand">
+                  <UserIcon className="h-4 w-4" />
+                </span>
+                Login
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LogoutIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
   );
 }
 
