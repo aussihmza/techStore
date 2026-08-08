@@ -18,7 +18,7 @@ export default function OrderPlacedModal({ orderId, open }: OrderPlacedModalProp
       aria-modal="true"
       aria-labelledby="order-placed-title"
     >
-      <div className="relative w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-2xl">
+      <div className="relative w-full max-w-md animate-fade-up rounded-[1.5rem] border border-white/70 bg-white/95 p-8 shadow-2xl backdrop-blur-xl">
         <button
           type="button"
           aria-label="Close"
@@ -28,14 +28,17 @@ export default function OrderPlacedModal({ orderId, open }: OrderPlacedModalProp
           <span className="text-2xl leading-none">&times;</span>
         </button>
 
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-lg shadow-brand/35">
           <CheckCircleIcon className="h-7 w-7" />
         </span>
 
-        <h2 id="order-placed-title" className="mt-5 text-2xl font-extrabold text-ink">
+        <h2
+          id="order-placed-title"
+          className="font-display mt-5 text-2xl font-extrabold text-ink"
+        >
           Order placed successfully
         </h2>
-        <p className="mt-2 text-base text-slate-500">
+        <p className="section-sub mt-2 text-base">
           {orderId
             ? `Your order ${orderId} has been placed with Cash on Delivery.`
             : "Your order has been placed with Cash on Delivery."}
@@ -44,7 +47,7 @@ export default function OrderPlacedModal({ orderId, open }: OrderPlacedModalProp
         <button
           type="button"
           onClick={() => navigate("/categories", { replace: true })}
-          className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-brand px-5 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark"
+          className="btn-primary mt-8 w-full"
         >
           Continue Shopping
         </button>

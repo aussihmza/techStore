@@ -86,7 +86,7 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14">
+    <div className="page-shell">
       <nav className="pt-6 text-base text-slate-400">
         <Link to="/" className="hover:text-brand">
           Home

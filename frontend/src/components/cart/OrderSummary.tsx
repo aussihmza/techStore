@@ -12,8 +12,8 @@ const formatPrice = (value: number) =>
 
 export default function OrderSummary({ subtotal, taxes, total }: OrderSummaryProps) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6">
-      <h2 className="text-xl font-bold text-ink">Order Summary</h2>
+    <div className="rounded-2xl border border-slate-200/90 bg-white/95 p-6 shadow-[0_18px_50px_-28px_rgba(15,23,42,0.28)] backdrop-blur-sm lg:sticky lg:top-24">
+      <h2 className="font-display text-xl font-bold text-ink">Order Summary</h2>
 
       <dl className="mt-5 space-y-3 border-b border-slate-100 pb-5 text-base">
         <div className="flex justify-between">
@@ -32,19 +32,18 @@ export default function OrderSummary({ subtotal, taxes, total }: OrderSummaryPro
 
       <div className="flex items-end justify-between pt-5">
         <span className="text-lg font-bold text-ink">Total</span>
-        <span className="text-3xl font-extrabold text-brand">{formatPrice(total)}</span>
+        <span className="font-display text-3xl font-extrabold text-brand">
+          {formatPrice(total)}
+        </span>
       </div>
       <p className="mt-1 text-right text-xs text-slate-400">Includes applicable VAT/Sales Tax</p>
 
-      <Link
-        to="/checkout"
-        className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark"
-      >
+      <Link to="/checkout" className="btn-primary mt-5 w-full">
         Proceed to Checkout
         <ArrowRightIcon className="h-5 w-5" />
       </Link>
 
-      <div className="mt-4 flex items-center gap-2 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
+      <div className="mt-4 flex items-center gap-2 rounded-xl bg-brand/5 px-4 py-3 text-sm text-slate-600">
         <ShieldIcon className="h-5 w-5 shrink-0 text-brand" />
         Secure encrypted checkout powered by TechStore Trust
       </div>
@@ -55,11 +54,11 @@ export default function OrderSummary({ subtotal, taxes, total }: OrderSummaryPro
           <input
             type="text"
             placeholder="CODE10"
-            className="flex-1 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-ink outline-none placeholder:text-slate-400 focus:border-brand"
+            className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-ink outline-none placeholder:text-slate-400 focus:border-brand focus:ring-2 focus:ring-brand/15"
           />
           <button
             type="button"
-            className="rounded-lg bg-slate-100 px-5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-200"
+            className="rounded-xl bg-slate-100 px-5 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-200"
           >
             Apply
           </button>

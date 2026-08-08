@@ -16,7 +16,7 @@ export default function CategoriesPage() {
   // Avoid a second categories fetch — ShopCatalog loads products + categories once
   if (categorySlug) {
     return (
-      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14">
+      <div className="page-shell py-2">
         <ShopCatalog categorySlug={categorySlug} variant="categories" />
       </div>
     );
@@ -55,7 +55,7 @@ function CategoriesIndex() {
   }
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14">
+    <div className="page-shell">
       <nav className="pt-6 text-base text-slate-400">
         <Link to="/" className="hover:text-brand">
           Home
@@ -65,8 +65,8 @@ function CategoriesIndex() {
       </nav>
 
       <div className="mx-auto max-w-2xl pt-8 text-center">
-        <h1 className="text-3xl font-bold text-ink sm:text-4xl">Shop by Category</h1>
-        <p className="mt-3 text-lg text-slate-500">
+        <h1 className="section-heading text-3xl sm:text-4xl">Shop by Category</h1>
+        <p className="section-sub mt-3 text-lg">
           Find the perfect tools for your professional workflow. From high-performance workstations
           to precision peripherals.
         </p>

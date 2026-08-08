@@ -146,7 +146,7 @@ export default function ShopCatalog({ categorySlug, variant = "shop" }: ShopCata
       </nav>
 
       <div className="mb-8 mt-2">
-        <h1 className="text-3xl font-bold text-ink sm:text-4xl">
+        <h1 className="section-heading text-3xl sm:text-4xl">
           {searchQuery
             ? `Results for “${searchQuery}”`
             : category

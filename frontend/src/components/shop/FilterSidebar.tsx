@@ -60,9 +60,9 @@ export default function FilterSidebar({
     filters.minRating > 0;
 
   return (
-    <aside className="h-full rounded-2xl border border-slate-200 bg-white p-6">
+    <aside className="h-full rounded-2xl border border-slate-200/90 bg-white/90 p-6 shadow-[0_10px_40px_-20px_rgba(15,23,42,0.15)] backdrop-blur-sm">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-ink">Filters</h2>
+        <h2 className="font-display text-lg font-bold text-ink">Filters</h2>
         {hasActiveFilters && (
           <button
             type="button"

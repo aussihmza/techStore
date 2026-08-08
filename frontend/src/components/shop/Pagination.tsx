@@ -57,10 +57,10 @@ function PageButton({ children, active, disabled, ariaLabel, onClick }: PageButt
       aria-label={ariaLabel}
       disabled={disabled}
       onClick={onClick}
-      className={`flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+      className={`flex h-10 min-w-10 items-center justify-center rounded-xl border px-3 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
         active
-          ? "border-brand bg-brand text-white"
-          : "border-slate-200 bg-white text-slate-600 hover:border-brand hover:text-brand"
+          ? "border-brand bg-brand text-white shadow-md shadow-brand/30"
+          : "border-slate-200 bg-white/90 text-slate-600 hover:border-brand hover:text-brand"
       }`}
     >
       {children}

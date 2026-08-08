@@ -32,26 +32,35 @@ const columns = [
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-400">
-      <div className="w-full px-4 py-14 sm:px-6 lg:px-10 xl:px-14">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+    <footer className="relative mt-8 overflow-hidden bg-[#0b1220] text-slate-400">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-20 top-0 h-56 w-56 rounded-full bg-brand/20 blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-16 bottom-0 h-64 w-64 rounded-full bg-sky-500/10 blur-3xl"
+      />
+
+      <div className="page-shell relative py-16">
+        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="mb-4 flex items-center gap-2 text-lg font-extrabold text-white">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-sm">
+            <div className="mb-4 flex items-center gap-2.5 font-display text-lg font-extrabold text-white">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-sm shadow-lg shadow-brand/40">
                 T
               </span>
               TechStore
             </div>
-            <p className="max-w-xs text-sm leading-relaxed">
+            <p className="max-w-xs text-sm leading-relaxed text-slate-400">
               Premium hardware picked for industry professionals. We deliver the standard for
               high-performance consumer electronics.
             </p>
-            <div className="mt-5 flex gap-3">
+            <div className="mt-6 flex gap-3">
               {[FacebookIcon, TwitterIcon, InstagramIcon].map((Icon, i) => (
                 <a
                   key={i}
                   href="#"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-800 text-slate-300 transition-colors hover:bg-brand hover:text-white"
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all hover:-translate-y-0.5 hover:border-brand/40 hover:bg-brand hover:text-white"
                 >
                   <Icon className="h-4 w-4" />
                 </a>
@@ -61,13 +70,16 @@ export default function Footer() {
 
           {columns.map((col) => (
             <div key={col.title}>
-              <h4 className="mb-4 text-xs font-semibold uppercase tracking-wider text-slate-200">
+              <h4 className="mb-4 text-xs font-semibold uppercase tracking-[0.14em] text-slate-200">
                 {col.title}
               </h4>
               <ul className="space-y-3 text-sm">
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    <Link to={link.href} className="transition-colors hover:text-white">
+                    <Link
+                      to={link.href}
+                      className="transition-colors hover:text-white"
+                    >
                       {link.label}
                     </Link>
                   </li>
@@ -77,8 +89,8 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 border-t border-slate-800 pt-6 text-center text-xs text-slate-500">
-          © 2024 TechStore. All rights reserved. Designed & developed with care.
+        <div className="mt-14 border-t border-white/10 pt-6 text-center text-xs text-slate-500">
+          © {new Date().getFullYear()} TechStore. All rights reserved.
         </div>
       </div>
     </footer>

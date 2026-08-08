@@ -45,13 +45,16 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
-      <div className="flex h-20 w-full items-center gap-8 px-4 sm:px-6 lg:px-10 xl:px-14">
-        <Link to="/" className="text-3xl font-extrabold tracking-tight text-brand">
+    <header className="sticky top-0 z-50 border-b border-white/60 bg-white/75 shadow-[0_8px_30px_-18px_rgba(15,23,42,0.25)] backdrop-blur-xl">
+      <div className="page-shell flex h-[4.75rem] items-center gap-6 lg:gap-8">
+        <Link
+          to="/"
+          className="font-display text-2xl font-extrabold tracking-tight text-brand transition-opacity hover:opacity-90 sm:text-3xl"
+        >
           TechStore
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-7 md:flex">
           {navLinks.map((link) => {
             const active =
               link.href !== "#" &&
@@ -61,7 +64,7 @@ export default function Navbar() {
               <Link
                 key={link.label}
                 to={link.href}
-                className={`relative text-base font-medium transition-colors ${
+                className={`relative text-[0.95rem] font-semibold transition-colors ${
                   active ? "text-brand" : "text-slate-600 hover:text-ink"
                 }`}
               >
@@ -74,7 +77,7 @@ export default function Navbar() {
           })}
         </nav>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
           <SearchBar />
 
           <IconButton
@@ -199,10 +202,10 @@ function ProfileMenu({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-3 w-72 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xl shadow-slate-900/10">
+        <div className="absolute right-0 top-full z-50 mt-3 w-72 overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-xl shadow-slate-900/10 backdrop-blur-xl animate-fade-in">
           {isLoggedIn ? (
             <>
-              <div className="bg-gradient-to-br from-slate-50 to-white px-4 py-4">
+              <div className="bg-gradient-to-br from-sky-50/80 via-white to-white px-4 py-4">
                 <div className="flex items-center gap-3">
                   <span
                     className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-base font-bold text-white shadow-md"
@@ -286,8 +289,8 @@ interface IconButtonProps {
 }
 
 function IconButton({ label, badge, to, active, onClick, children }: IconButtonProps) {
-  const className = `relative rounded-full p-2 transition-colors hover:bg-slate-100 hover:text-brand ${
-    active ? "text-brand" : "text-slate-600"
+  const className = `relative rounded-full p-2.5 transition-all hover:bg-brand/5 hover:text-brand ${
+    active ? "bg-brand/5 text-brand" : "text-slate-600"
   }`;
 
   const inner = (

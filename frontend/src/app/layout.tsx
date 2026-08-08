@@ -6,9 +6,13 @@ import StripeReturnHandler from "@/components/checkout/StripeReturnHandler";
 
 export default function Layout() {
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 text-ink">
+    <div className="relative flex min-h-screen flex-col text-ink">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[28rem] bg-[radial-gradient(ellipse_at_top,rgba(37_99_235/0.09),transparent_65%)]"
+      />
       <Navbar />
-      <main className="flex-1">
+      <main className="relative flex-1">
         <Outlet />
       </main>
       <Footer />

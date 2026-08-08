@@ -65,8 +65,8 @@ export default function ProductCard({ product }: { product: Product }) {
   };
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition-shadow hover:shadow-lg">
-      <div className="relative aspect-[4/3] overflow-hidden bg-white p-5">
+    <article className="surface-card group flex flex-col overflow-hidden rounded-2xl">
+      <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-b from-slate-50 to-white p-5">
         <div className="absolute left-3 top-3 z-10">
           {product.badge && <Badge label={product.badge} />}
         </div>
@@ -75,7 +75,7 @@ export default function ProductCard({ product }: { product: Product }) {
           aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
           aria-pressed={wished}
           onClick={() => toggleWishlist(product)}
-          className={`absolute right-4 top-4 z-10 rounded-full bg-white/90 p-2 shadow-sm backdrop-blur transition-colors ${
+          className={`absolute right-4 top-4 z-10 rounded-full bg-white/95 p-2 shadow-sm backdrop-blur transition-all hover:scale-105 ${
             wished ? "text-rose-500" : "text-slate-400 hover:text-rose-500"
           }`}
         >
@@ -86,7 +86,7 @@ export default function ProductCard({ product }: { product: Product }) {
             src={product.image}
             alt={product.name}
             fit="contain"
-            className="h-full w-full transition-transform duration-300 group-hover:scale-105"
+            className="h-full w-full transition-transform duration-500 group-hover:scale-105"
           />
         </Link>
       </div>
@@ -106,7 +106,10 @@ export default function ProductCard({ product }: { product: Product }) {
 
         <div className="mt-auto pt-5">
           <div className="flex items-center justify-between gap-3">
-            <Link to={`/product/${product.id}`} className="text-2xl font-extrabold text-ink">
+            <Link
+              to={`/product/${product.id}`}
+              className="font-display text-2xl font-extrabold tracking-tight text-ink"
+            >
               ${product.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </Link>
 
@@ -115,7 +118,7 @@ export default function ProductCard({ product }: { product: Product }) {
                 type="button"
                 aria-label="Add to cart"
                 onClick={handleAdd}
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand text-white transition-colors hover:bg-brand-dark"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand text-white shadow-md shadow-brand/25 transition-all hover:scale-105 hover:bg-brand-dark"
               >
                 <CartIcon className="h-6 w-6" />
               </button>
@@ -124,7 +127,7 @@ export default function ProductCard({ product }: { product: Product }) {
                 type="button"
                 aria-label={`Quantity ${qty}. Tap to edit`}
                 onClick={openControls}
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-slate-400 bg-slate-100 text-lg font-bold text-ink transition-colors hover:bg-slate-200"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-brand/30 bg-brand/5 text-lg font-bold text-brand transition-colors hover:bg-brand/10"
               >
                 {qty}
               </button>

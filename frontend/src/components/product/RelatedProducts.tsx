@@ -17,7 +17,7 @@ export default function RelatedProducts({ products, categorySlug }: RelatedProdu
   return (
     <section className="pb-20">
       <div className="mb-8 flex items-end justify-between gap-4">
-        <h2 className="text-2xl font-bold text-ink sm:text-3xl">Complete Your Experience</h2>
+        <h2 className="section-heading text-2xl sm:text-3xl">Complete Your Experience</h2>
         <Link
           to={`/shop/${categorySlug}`}
           className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-brand transition-colors hover:text-brand-dark"
@@ -33,7 +33,7 @@ export default function RelatedProducts({ products, categorySlug }: RelatedProdu
           return (
             <article
               key={product.id}
-              className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-white transition-shadow hover:shadow-md"
+              className="surface-card group relative overflow-hidden rounded-2xl"
             >
               <button
                 type="button"

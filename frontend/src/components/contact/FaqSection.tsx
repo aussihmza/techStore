@@ -22,8 +22,8 @@ export default function FaqSection() {
   return (
     <section className="py-16">
       <div className="mx-auto max-w-2xl text-center">
-        <h2 className="text-3xl font-bold text-ink sm:text-4xl">Frequently Asked Questions</h2>
-        <p className="mt-3 text-lg text-slate-500">
+        <h2 className="section-heading text-3xl sm:text-4xl">Frequently Asked Questions</h2>
+        <p className="section-sub mt-3 text-lg">
           Quick answers to the most common questions about our products and services.
         </p>
       </div>
@@ -32,7 +32,10 @@ export default function FaqSection() {
         {faqs.map((faq, i) => {
           const isOpen = open === i;
           return (
-            <div key={faq.q} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <div
+              key={faq.q}
+              className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 shadow-sm backdrop-blur-sm"
+            >
               <button
                 type="button"
                 onClick={() => setOpen(isOpen ? -1 : i)}

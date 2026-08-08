@@ -47,10 +47,10 @@ export default function SupportPage() {
 
   return (
     <div className="w-full bg-white">
-      <div className="w-full px-4 pb-20 pt-10 sm:px-6 lg:px-10 xl:px-14">
+      <div className="page-shell pb-20 pt-10">
         <div className="mx-auto max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-wider text-brand">Customer Service</p>
-          <h1 className="mt-2 text-3xl font-extrabold text-ink sm:text-4xl">
+          <h1 className="section-heading mt-2 text-3xl sm:text-4xl">
             Returns, Warranty & Tracking
           </h1>
           <p className="mt-3 text-base text-slate-500">

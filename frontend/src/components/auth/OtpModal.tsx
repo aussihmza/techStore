@@ -47,7 +47,7 @@ export default function OtpModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-2xl"
+        className="relative w-full max-w-md animate-fade-up rounded-[1.5rem] border border-white/70 bg-white/95 p-8 shadow-2xl backdrop-blur-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -59,7 +59,7 @@ export default function OtpModal({
           <span className="text-2xl leading-none">&times;</span>
         </button>
 
-        <h2 id="otp-modal-title" className="text-2xl font-extrabold text-ink">
+        <h2 id="otp-modal-title" className="font-display text-2xl font-extrabold text-ink">
           Enter OTP
         </h2>
         <p className="mt-2 text-sm text-slate-500">
@@ -91,7 +91,7 @@ export default function OtpModal({
           <button
             type="submit"
             disabled={loading || otp.length !== 6}
-            className="w-full rounded-xl bg-brand px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark disabled:opacity-60"
+            className="btn-primary w-full disabled:opacity-60 disabled:hover:transform-none"
           >
             {loading ? "Verifying..." : "Verify OTP"}
           </button>

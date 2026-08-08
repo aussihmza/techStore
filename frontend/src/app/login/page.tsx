@@ -82,7 +82,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-xl bg-brand px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark disabled:opacity-60"
+          className="btn-primary w-full disabled:opacity-60 disabled:hover:transform-none"
         >
           {loading ? "Signing in..." : "Continue to TechStore"}
         </button>

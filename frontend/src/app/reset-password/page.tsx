@@ -70,7 +70,7 @@ export default function ResetPasswordPage() {
           </p>
           <Link
             to="/forgot-password"
-            className="inline-flex w-full items-center justify-center rounded-xl bg-brand px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark"
+            className="btn-primary w-full"
           >
             Request OTP
           </Link>
@@ -82,7 +82,7 @@ export default function ResetPasswordPage() {
           </p>
           <Link
             to="/login"
-            className="inline-flex w-full items-center justify-center rounded-xl bg-brand px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark"
+            className="btn-primary w-full"
           >
             Go to login
           </Link>
@@ -135,7 +135,7 @@ export default function ResetPasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-brand px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark disabled:opacity-60"
+            className="btn-primary w-full disabled:opacity-60 disabled:hover:transform-none"
           >
             {loading ? "Updating..." : "Update password"}
           </button>

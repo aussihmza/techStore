@@ -4,7 +4,13 @@
   --color-brand: #2563eb;
   --color-brand-dark: #1d4ed8;
   --color-ink: #0f172a;
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --color-surface: #ffffff;
+  --color-page: #f4f7fb;
+  --color-muted: #64748b;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Manrope", "Plus Jakarta Sans", ui-sans-serif, sans-serif;
+  --shadow-soft: 0 10px 40px -16px rgb(15 23 42 / 0.12);
+  --shadow-lift: 0 18px 50px -20px rgb(37 99 235 / 0.28);
 }
 
 html {
@@ -13,7 +19,184 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background-color: #f8fafc;
   color: var(--color-ink);
+  background-color: var(--color-page);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgb(37 99 235 / 0.1), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 0%, rgb(56 189 248 / 0.08), transparent 50%),
+    radial-gradient(ellipse 50% 30% at 50% 100%, rgb(37 99 235 / 0.04), transparent 55%);
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgb(37 99 235 / 0.18);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid rgb(37 99 235 / 0.55);
+  outline-offset: 2px;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.page-shell {
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .page-shell {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page-shell {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .page-shell {
+    padding-left: 3.5rem;
+    padding-right: 3.5rem;
+  }
+}
+
+.section-heading {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--color-ink);
+}
+
+.section-sub {
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.9rem;
+  background: var(--color-brand);
+  padding: 0.85rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  transition:
+    background-color 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+  box-shadow: 0 10px 24px -12px rgb(37 99 235 / 0.65);
+}
+
+.btn-primary:hover {
+  background: var(--color-brand-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lift);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgb(226 232 240);
+  background: rgb(255 255 255 / 0.85);
+  padding: 0.85rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  backdrop-filter: blur(8px);
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.btn-secondary:hover {
+  background: white;
+  border-color: rgb(203 213 225);
+  transform: translateY(-1px);
+}
+
+.surface-card {
+  border: 1px solid rgb(226 232 240 / 0.9);
+  background: rgb(255 255 255 / 0.92);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+
+.surface-card:hover {
+  transform: translateY(-3px);
+  border-color: rgb(191 219 254);
+  box-shadow: var(--shadow-lift);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease both;
+}
+
+.animate-delay-1 {
+  animation-delay: 0.1s;
+}
+
+.animate-delay-2 {
+  animation-delay: 0.2s;
+}
+
+.animate-delay-3 {
+  animation-delay: 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-fade-in,
+  .btn-primary,
+  .btn-secondary,
+  .surface-card {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
 }

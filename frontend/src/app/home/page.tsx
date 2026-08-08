@@ -5,8 +5,8 @@ import Newsletter from "@/components/home/Newsletter";
 
 export default function HomePage() {
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14">
-      <div className="pt-6">
+    <div className="page-shell">
+      <div className="pt-0 sm:pt-2">
         <Hero />
       </div>
       <CategoryShowcase />

@@ -24,7 +24,7 @@ export default function SuccessModal({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-2xl"
+        className="relative w-full max-w-md animate-fade-up rounded-[1.5rem] border border-white/70 bg-white/95 p-8 shadow-2xl backdrop-blur-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <button
@@ -36,25 +36,21 @@ export default function SuccessModal({
           <span className="text-2xl leading-none">&times;</span>
         </button>
 
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-lg shadow-brand/35">
           <CheckCircleIcon className="h-7 w-7" />
         </span>
 
         <h2
           id="success-modal-title"
-          className="mt-5 text-2xl font-extrabold text-ink"
+          className="font-display mt-5 text-2xl font-extrabold text-ink"
         >
           {title}
         </h2>
         {message ? (
-          <p className="mt-2 text-base text-slate-500">{message}</p>
+          <p className="section-sub mt-2 text-base">{message}</p>
         ) : null}
 
-        <button
-          type="button"
-          onClick={onClose}
-          className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-brand px-5 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark"
-        >
+        <button type="button" onClick={onClose} className="btn-primary mt-8 w-full">
           OK
         </button>
       </div>

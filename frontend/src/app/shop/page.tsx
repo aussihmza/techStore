@@ -5,7 +5,7 @@ export default function ShopPage() {
   const { categorySlug } = useParams<{ categorySlug?: string }>();
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14">
+    <div className="page-shell py-2">
       <ShopCatalog categorySlug={categorySlug} />
     </div>
   );

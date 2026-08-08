@@ -12,7 +12,7 @@ export default function ProductGallery({ images, alt }: ProductGalleryProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl bg-slate-100 p-8 sm:p-12">
+      <div className="flex aspect-square items-center justify-center overflow-hidden rounded-[1.5rem] border border-slate-200/80 bg-gradient-to-b from-slate-50 to-white p-8 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.25)] sm:p-12">
         <ProductImage
           src={main}
           alt={alt}
@@ -29,10 +29,10 @@ export default function ProductGallery({ images, alt }: ProductGalleryProps) {
             aria-label={`View image ${i + 1}`}
             aria-pressed={active === i}
             onClick={() => setActive(i)}
-            className={`aspect-square overflow-hidden rounded-xl bg-slate-100 p-2 transition-all ${
+            className={`aspect-square overflow-hidden rounded-xl border bg-white p-2 transition-all ${
               active === i
-                ? "ring-2 ring-brand ring-offset-2"
-                : "hover:ring-1 hover:ring-slate-300"
+                ? "border-brand ring-2 ring-brand/30"
+                : "border-slate-200 hover:border-brand/40"
             }`}
           >
             <ProductImage src={src} alt={`${alt} thumbnail ${i + 1}`} fit="contain" className="h-full w-full" />

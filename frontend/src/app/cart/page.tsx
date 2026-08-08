@@ -15,10 +15,10 @@ export default function CartPage() {
   }, [cart]);
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14">
+    <div className="page-shell">
       <div className="pt-10">
-        <h1 className="text-3xl font-bold text-ink sm:text-4xl">Shopping Cart</h1>
-        <p className="mt-2 text-base text-slate-500">
+        <h1 className="section-heading text-3xl sm:text-4xl">Shopping Cart</h1>
+        <p className="section-sub mt-2 text-base">
           Review your selection of premium high-performance hardware.
         </p>
       </div>
@@ -26,7 +26,7 @@ export default function CartPage() {
       {cart.length > 0 ? (
         <section className="mt-8 grid gap-8 pb-16 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6">
+            <div className="rounded-2xl border border-slate-200/90 bg-white/95 p-6 shadow-[0_18px_50px_-28px_rgba(15,23,42,0.2)] backdrop-blur-sm">
               <div className="hidden grid-cols-12 gap-4 pb-2 text-xs font-semibold uppercase tracking-wide text-slate-400 sm:grid">
                 <span className="col-span-6">Product</span>
                 <span className="col-span-2">Price</span>

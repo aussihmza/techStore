@@ -28,16 +28,19 @@ export default function ValuesSection() {
   return (
     <section className="py-16">
       <div className="mx-auto max-w-2xl text-center">
-        <h2 className="text-3xl font-bold text-ink sm:text-4xl">The TechStore DNA</h2>
-        <p className="mt-3 text-lg text-slate-500">
+        <h2 className="section-heading text-3xl sm:text-4xl">The TechStore DNA</h2>
+        <p className="section-sub mt-3 text-lg">
           Every piece that leaves our facility is built upon three non-negotiable pillars that
           define our identity as a hardware pioneer.
         </p>
       </div>
 
-      <div className="mt-12 grid gap-8 md:grid-cols-3">
+      <div className="mt-12 grid gap-6 md:grid-cols-3 md:gap-8">
         {values.map(({ Icon, title, description }) => (
-          <div key={title} className="text-center">
+          <div
+            key={title}
+            className="surface-card rounded-2xl p-8 text-center"
+          >
             <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand/10 text-brand">
               <Icon className="h-7 w-7" />
             </span>

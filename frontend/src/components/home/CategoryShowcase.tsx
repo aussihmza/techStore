@@ -23,29 +23,29 @@ const categories: { label: string; slug: string; Icon: IconType }[] = [
 
 export default function CategoryShowcase() {
   return (
-    <section className="py-16">
-      <div className="mb-8 flex items-end justify-between gap-4">
+    <section className="py-16 sm:py-20">
+      <div className="mb-9 flex items-end justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-ink sm:text-3xl">Shop by Category</h2>
-          <p className="mt-1 text-base text-slate-500">Find the perfect tool for your trade</p>
+          <h2 className="section-heading text-2xl sm:text-3xl">Shop by Category</h2>
+          <p className="section-sub mt-1.5 text-base">Find the perfect tool for your trade</p>
         </div>
         <Link
           to="/categories"
-          className="inline-flex shrink-0 items-center gap-1.5 text-base font-semibold text-brand hover:text-brand-dark"
+          className="inline-flex shrink-0 items-center gap-1.5 text-base font-semibold text-brand transition-colors hover:text-brand-dark"
         >
           Browse all
           <ArrowRightIcon className="h-4 w-4" />
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-6">
         {categories.map(({ label, slug, Icon }) => (
           <Link
             key={slug}
             to={`/categories/${slug}`}
-            className="group flex flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white p-6 transition-all hover:border-brand/30 hover:shadow-md"
+            className="surface-card group flex flex-col items-center gap-3 rounded-2xl p-6"
           >
-            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand/10 text-brand transition-colors group-hover:bg-brand group-hover:text-white">
+            <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand/10 text-brand transition-all duration-300 group-hover:scale-105 group-hover:bg-brand group-hover:text-white group-hover:shadow-lg group-hover:shadow-brand/30">
               <Icon className="h-7 w-7" />
             </span>
             <span className="text-sm font-semibold text-ink">{label}</span>

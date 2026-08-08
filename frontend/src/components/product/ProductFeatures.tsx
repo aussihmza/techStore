@@ -44,7 +44,7 @@ function FeatureIcon({ icon, dark }: { icon?: ProductFeature["icon"]; dark?: boo
 export default function ProductFeatures({ features }: { features: ProductFeature[] }) {
   return (
     <section className="py-16">
-      <h2 className="text-center text-2xl font-bold text-ink sm:text-3xl">
+      <h2 className="section-heading text-center text-2xl sm:text-3xl">
         Engineered for Performance
       </h2>
 

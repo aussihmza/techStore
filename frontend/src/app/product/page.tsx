@@ -95,8 +95,8 @@ export default function ProductDetailPage() {
   const categoryLabel = category?.label ?? product.category;
 
   return (
-    <div className="w-full bg-white">
-      <div className="w-full px-4 sm:px-6 lg:px-10 xl:px-14">
+    <div className="w-full">
+      <div className="page-shell">
         <nav
           aria-label="Breadcrumb"
           className="flex flex-wrap items-center gap-2 pt-6 text-sm text-slate-400"

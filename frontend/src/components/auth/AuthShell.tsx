@@ -29,7 +29,7 @@ export default function AuthShell({ mode, title, subtitle, children }: AuthShell
         className="pointer-events-none absolute left-1/3 top-1/4 h-64 w-64 rounded-full bg-sky-100/60 blur-3xl"
       />
 
-      <div className="relative w-full max-w-md rounded-2xl border border-slate-100 bg-white p-8 shadow-xl shadow-slate-200/60 sm:p-10">
+      <div className="relative w-full max-w-md animate-fade-up rounded-[1.5rem] border border-white/70 bg-white/90 p-8 shadow-[0_30px_80px_-40px_rgba(37,99,235,0.45)] backdrop-blur-xl sm:p-10">
         {showTabs ? (
           <div className="mb-8 flex gap-8 border-b border-slate-100">
             <TabLink to="/login" active={mode === "login"}>
@@ -48,8 +48,13 @@ export default function AuthShell({ mode, title, subtitle, children }: AuthShell
           </Link>
         )}
 
-        <h1 className="text-3xl font-extrabold tracking-tight text-ink">{title}</h1>
-        <p className="mt-2 text-base text-slate-500">{subtitle}</p>
+        <p className="font-display text-xs font-bold uppercase tracking-[0.2em] text-brand">
+          TechStore
+        </p>
+        <h1 className="font-display mt-2 text-3xl font-extrabold tracking-tight text-ink">
+          {title}
+        </h1>
+        <p className="section-sub mt-2 text-base">{subtitle}</p>
 
         <div className="mt-8">{children}</div>
 
@@ -101,7 +106,7 @@ function SocialButton({ label, icon }: { label: string; icon: React.ReactNode })
   return (
     <button
       type="button"
-      className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-ink transition-colors hover:bg-slate-50"
+      className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-ink transition-all hover:-translate-y-0.5 hover:border-brand/30 hover:bg-brand/5"
     >
       {icon}
       {label}
@@ -134,4 +139,4 @@ export function AuthField({
 }
 
 export const authInputClass =
-  "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-ink outline-none placeholder:text-slate-400 focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/15";
+  "w-full rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-base text-ink outline-none placeholder:text-slate-400 transition-shadow focus:border-brand focus:bg-white focus:ring-2 focus:ring-brand/15";

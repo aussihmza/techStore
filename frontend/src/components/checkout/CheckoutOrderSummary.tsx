@@ -23,8 +23,8 @@ export default function CheckoutOrderSummary({
   loadingLabel = "Placing order...",
 }: CheckoutOrderSummaryProps) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 lg:sticky lg:top-24">
-      <h2 className="text-xl font-bold text-ink">Order Summary</h2>
+    <div className="rounded-2xl border border-slate-200/90 bg-white/95 p-6 shadow-[0_18px_50px_-28px_rgba(15,23,42,0.28)] backdrop-blur-sm lg:sticky lg:top-24">
+      <h2 className="font-display text-xl font-bold text-ink">Order Summary</h2>
 
       <ul className="mt-5 space-y-4 border-b border-slate-200 pb-5">
         {items.map((item) => (

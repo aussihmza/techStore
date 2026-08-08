@@ -16,32 +16,31 @@ export default function LoginRequiredModal() {
       onClick={closeLoginPrompt}
     >
       <div
-        className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-2xl"
+        className="w-full max-w-md animate-fade-up rounded-[1.5rem] border border-white/70 bg-white/95 p-8 shadow-2xl backdrop-blur-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-brand">
           <UserIcon className="h-6 w-6" />
         </span>
 
-        <h2 id="login-required-title" className="mt-5 text-2xl font-extrabold text-ink">
+        <h2
+          id="login-required-title"
+          className="font-display mt-5 text-2xl font-extrabold text-ink"
+        >
           You are not logged in
         </h2>
-        <p className="mt-2 text-base text-slate-500">
+        <p className="section-sub mt-2 text-base">
           Please log in first to use wishlist and cart features.
         </p>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Link
-            to="/login"
-            onClick={closeLoginPrompt}
-            className="inline-flex flex-1 items-center justify-center rounded-xl bg-brand px-5 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark"
-          >
+          <Link to="/login" onClick={closeLoginPrompt} className="btn-primary flex-1">
             Go to Login
           </Link>
           <button
             type="button"
             onClick={closeLoginPrompt}
-            className="inline-flex flex-1 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3.5 text-base font-semibold text-ink transition-colors hover:bg-slate-50"
+            className="btn-secondary flex-1"
           >
             Cancel
           </button>

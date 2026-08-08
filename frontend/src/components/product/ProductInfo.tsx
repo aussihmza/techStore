@@ -43,7 +43,7 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
         {badgeLabel}
       </span>
 
-      <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-ink sm:text-4xl lg:text-5xl">
+      <h1 className="font-display mt-4 text-3xl font-extrabold tracking-tight text-ink sm:text-4xl lg:text-5xl">
         {product.name}
       </h1>
 
@@ -68,7 +68,9 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
       </div>
 
       <div className="mt-6">
-        <p className="text-3xl font-extrabold text-brand sm:text-4xl">{formatPrice(product.price)}</p>
+        <p className="font-display text-3xl font-extrabold text-brand sm:text-4xl">
+          {formatPrice(product.price)}
+        </p>
         {detail.monthlyPrice !== undefined && (
           <p className="mt-1 text-sm text-slate-400">
             or {formatPrice(detail.monthlyPrice)}/mo. for 24 mo. before trade-in
@@ -163,7 +165,7 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
           <button
             type="button"
             onClick={() => addToCart(product)}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark"
+            className="btn-primary flex-1"
           >
             <CartIcon className="h-5 w-5" />
             Add to Cart
@@ -172,7 +174,7 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
         <button
           type="button"
           onClick={handleBuyNow}
-          className="inline-flex flex-1 items-center justify-center rounded-xl border-2 border-brand bg-white px-6 py-3.5 text-base font-semibold text-brand transition-colors hover:bg-brand/5"
+          className="btn-secondary flex-1 border-brand/40 text-brand hover:border-brand"
         >
           Buy Now
         </button>

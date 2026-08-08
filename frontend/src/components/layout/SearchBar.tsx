@@ -65,7 +65,7 @@ export default function SearchBar() {
           e.preventDefault();
           goToResults(query);
         }}
-        className="flex items-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/15"
+        className="flex items-center rounded-full border border-slate-200/90 bg-white/80 px-4 py-2.5 shadow-sm shadow-slate-900/5 transition-shadow focus-within:border-brand focus-within:bg-white focus-within:ring-2 focus-within:ring-brand/15"
       >
         <button type="submit" aria-label="Search" className="text-slate-400 hover:text-brand">
           <SearchIcon className="h-5 w-5" />
@@ -93,7 +93,7 @@ export default function SearchBar() {
         <div
           id={listId}
           role="listbox"
-          className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-[min(100vw-2rem,22rem)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg"
+          className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-[min(100vw-2rem,22rem)] overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 shadow-xl shadow-slate-900/10 backdrop-blur-xl animate-fade-in"
         >
           {suggestions.length > 0 ? (
             <ul className="max-h-80 overflow-y-auto py-2">

@@ -10,7 +10,7 @@ export default function PrecisionSection() {
   return (
     <section className="py-20">
       <div className="grid items-center gap-10 lg:grid-cols-2">
-        <div className="overflow-hidden rounded-2xl bg-slate-100">
+        <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-slate-100 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.3)]">
           <ProductImage
             src="/about/Ram.svg"
             alt="Precision-engineered hardware"
@@ -20,8 +20,8 @@ export default function PrecisionSection() {
         </div>
 
         <div>
-          <h2 className="text-3xl font-bold text-ink sm:text-4xl">A Decade of Precision</h2>
-          <p className="mt-5 text-lg leading-relaxed text-slate-500">
+          <h2 className="section-heading text-3xl sm:text-4xl">A Decade of Precision</h2>
+          <p className="section-sub mt-5 text-lg leading-relaxed">
             TechStore began in a small workshop with a single objective: to bridge the gap between
             industrial-grade performance and consumer-focused design. We noticed that high-caliber
             hardware often lacked elegance, while beautiful devices lacked the power to keep up.
