@@ -1,4 +1,5 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { useState } from "react";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useStore } from "@/context/StoreContext";
 
 const links = [
@@ -45,6 +46,78 @@ function NavItems({ compact = false }: { compact?: boolean }) {
   );
 }
 
+function AccountActions({
+  compact = false,
+}: {
+  compact?: boolean;
+}) {
+  const navigate = useNavigate();
+  const { logout } = useStore();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const goAsUser = () => {
+    navigate("/");
+  };
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await logout();
+      navigate("/login", { replace: true });
+    } finally {
+      setLoggingOut(false);
+    }
+  };
+
+  if (compact) {
+    return (
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={goAsUser}
+          className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-brand"
+        >
+          Shop as user
+        </button>
+        <button
+          type="button"
+          disabled={loggingOut}
+          onClick={() => void handleLogout()}
+          className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-60"
+        >
+          {loggingOut ? "..." : "Logout"}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1 border-t border-slate-100 p-3">
+      <button
+        type="button"
+        onClick={goAsUser}
+        className="flex w-full flex-col rounded-xl px-3 py-2.5 text-left transition hover:bg-slate-100"
+      >
+        <span className="text-sm font-semibold text-ink">Shop as user</span>
+        <span className="text-[11px] text-slate-400">
+          Open the storefront (stay logged in)
+        </span>
+      </button>
+      <button
+        type="button"
+        disabled={loggingOut}
+        onClick={() => void handleLogout()}
+        className="flex w-full flex-col rounded-xl px-3 py-2.5 text-left transition hover:bg-rose-50 disabled:opacity-60"
+      >
+        <span className="text-sm font-semibold text-rose-600">
+          {loggingOut ? "Logging out..." : "Logout"}
+        </span>
+        <span className="text-[11px] text-rose-400/80">End admin session</span>
+      </button>
+    </div>
+  );
+}
+
 export default function AdminShell() {
   const { user } = useStore();
 
@@ -73,14 +146,7 @@ export default function AdminShell() {
             <NavItems />
           </nav>
 
-          <div className="border-t border-slate-100 p-3">
-            <NavLink
-              to="/"
-              className="block rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-brand"
-            >
-              ← Back to store
-            </NavLink>
-          </div>
+          <AccountActions />
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -95,12 +161,9 @@ export default function AdminShell() {
               <p className="hidden text-sm text-slate-500 md:block">
                 Manage catalog, orders, reviews, and returns in one place.
               </p>
-              <NavLink
-                to="/"
-                className="text-sm font-semibold text-slate-500 transition hover:text-brand md:hidden"
-              >
-                ← Store
-              </NavLink>
+              <div className="md:hidden">
+                <AccountActions compact />
+              </div>
             </div>
             <nav className="flex gap-1 overflow-x-auto px-4 pb-3 md:hidden">
               <NavItems compact />
