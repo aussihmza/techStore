@@ -64,18 +64,27 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
           {Array.from({ length: 5 }).map((_, i) => (
             <StarIcon
               key={i}
-              className={`h-4 w-4 ${i < Math.round(product.rating) ? "text-amber-400" : "text-slate-200"}`}
+              className={`h-4 w-4 ${
+                product.reviews > 0 && i < Math.round(product.rating)
+                  ? "text-amber-400"
+                  : "text-slate-200"
+              }`}
             />
           ))}
         </div>
         <span className="text-sm text-slate-500">
-          ({product.rating.toFixed(1)} / 5.0) —{" "}
-          <span className="font-medium text-brand">
-            {product.reviews >= 1000
-              ? `${(product.reviews / 1000).toFixed(1)}k`
-              : product.reviews}{" "}
-            Reviews
-          </span>
+          {product.reviews > 0 ? (
+            <>
+              ({product.rating.toFixed(1)} / 5.0) —{" "}
+              <a href="#reviews" className="font-medium text-brand hover:underline">
+                {product.reviews} {product.reviews === 1 ? "review" : "reviews"}
+              </a>
+            </>
+          ) : (
+            <a href="#reviews" className="font-medium text-brand hover:underline">
+              No reviews yet — be the first
+            </a>
+          )}
         </span>
       </div>
 

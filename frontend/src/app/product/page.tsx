@@ -12,6 +12,7 @@ import {
 import ProductGallery from "@/components/product/ProductGallery";
 import ProductInfo from "@/components/product/ProductInfo";
 import ProductFeatures from "@/components/product/ProductFeatures";
+import ProductReviews from "@/components/product/ProductReviews";
 import RelatedProducts from "@/components/product/RelatedProducts";
 
 export default function ProductDetailPage() {
@@ -118,6 +119,20 @@ export default function ProductDetailPage() {
         </div>
 
         <ProductFeatures features={detail.features} />
+        <div id="reviews" className="scroll-mt-24">
+          <ProductReviews
+            productId={product.id}
+            rating={product.rating}
+            reviewsCount={product.reviews}
+            onSummaryChange={({ rating, reviewsCount }) => {
+              setProduct((prev) =>
+                prev
+                  ? { ...prev, rating, reviews: reviewsCount }
+                  : prev,
+              );
+            }}
+          />
+        </div>
         <RelatedProducts products={related} categorySlug={categorySlug} />
       </div>
     </div>

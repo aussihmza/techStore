@@ -7,6 +7,7 @@ import {
   getProductSort,
   toProductResponse,
 } from "../utils/productMapper.js";
+import { syncProductRating } from "./reviewService.js";
 
 async function findProductByParam(idOrSlug) {
   if (mongoose.Types.ObjectId.isValid(idOrSlug)) {
@@ -49,7 +50,12 @@ export const productService = {
       throw new ApiError(404, "Product not found");
     }
 
-    return { product: toProductResponse(product) };
+    const summary = await syncProductRating(product.slug);
+    const payload = toProductResponse(product);
+    payload.rating = summary.rating;
+    payload.reviews = summary.reviews;
+
+    return { product: payload };
   },
 
   async create(payload = {}) {

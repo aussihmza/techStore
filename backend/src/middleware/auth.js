@@ -26,3 +26,23 @@ export const requireAuth = asyncHandler(async (req, res, next) => {
     throw new ApiError(401, "Invalid or expired token");
   }
 });
+
+/** Attach user when a valid token is present; otherwise continue as guest. */
+export const optionalAuth = asyncHandler(async (req, res, next) => {
+  const header = req.headers.authorization || "";
+  const [scheme, token] = header.split(" ");
+
+  if (scheme !== "Bearer" || !token) {
+    return next();
+  }
+
+  try {
+    const decoded = verifyToken(token);
+    const user = await User.findById(decoded.sub).select("-password");
+    if (user) req.user = user;
+  } catch {
+    // ignore invalid tokens for public endpoints
+  }
+
+  return next();
+});
