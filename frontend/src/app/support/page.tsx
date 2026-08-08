@@ -6,6 +6,7 @@ import { formatPrice } from "@/lib/cart";
 import { formatShippingAddress, orderPathId } from "@/lib/order";
 import OrderStatusBadge from "@/components/orders/OrderStatusBadge";
 import OrderTimeline from "@/components/orders/OrderTimeline";
+import ReturnRequestForm from "@/components/support/ReturnRequestForm";
 import { ShieldIcon, TruckIcon } from "@/components/ui/icons";
 
 const sections = [
@@ -161,10 +162,10 @@ export default function SupportPage() {
               <div>
                 <h3 className="text-lg font-semibold text-ink">How to start a return</h3>
                 <p className="mt-2 text-base leading-relaxed text-slate-500">
-                  Contact support with your order ID and reason for return. We’ll email a prepaid
-                  label when eligible. Pack the item securely, drop it off with the carrier, and
-                  refunds are issued to your original payment method within 5–10 business days after
-                  inspection.
+                  Use the in-app RMA form below with your order and reason. When approved, we’ll
+                  email next steps (and a prepaid label when eligible). Pack the item securely,
+                  drop it off with the carrier, and refunds go to your original payment method within
+                  5–10 business days after inspection.
                 </p>
               </div>
               <div>
@@ -178,14 +179,13 @@ export default function SupportPage() {
               <div>
                 <h3 className="text-lg font-semibold text-ink">Warranty claims</h3>
                 <p className="mt-2 text-base leading-relaxed text-slate-500">
-                  Email{" "}
-                  <a href="mailto:support@techstore.com" className="font-medium text-brand hover:underline">
-                    support@techstore.com
-                  </a>{" "}
-                  with your order ID, product serial number, and a short description of the issue.
-                  We’ll guide you through repair, replacement, or manufacturer RMA options.
+                  Choose <strong className="font-semibold text-ink">Warranty claim</strong> in the
+                  form below and include the product serial number in the details. We’ll guide you
+                  through repair, replacement, or manufacturer RMA options.
                 </p>
               </div>
+
+              <ReturnRequestForm />
             </div>
           </section>
 

@@ -10,6 +10,7 @@ import contactRoutes from "./contactRoutes.js";
 import newsletterRoutes from "./newsletterRoutes.js";
 import promoRoutes from "./promoRoutes.js";
 import paymentRoutes from "./paymentRoutes.js";
+import returnRoutes from "./returnRoutes.js";
 
 const router = Router();
 
@@ -28,5 +29,6 @@ router.use("/contact", contactRoutes);
 router.use("/newsletter", newsletterRoutes);
 router.use("/promo", promoRoutes);
 router.use("/payments", paymentRoutes);
+router.use("/returns", returnRoutes);
 
 export default router;
