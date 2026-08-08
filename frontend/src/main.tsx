@@ -14,6 +14,8 @@ import ContactPage from "@/app/contact/page";
 import WishlistPage from "@/app/wishlist/page";
 import CartPage from "@/app/cart/page";
 import OrderSuccessPage from "@/app/order-success/page";
+import OrdersPage from "@/app/orders/page";
+import OrderDetailPage from "@/app/orders/detail/page";
 import ProductDetailPage from "@/app/product/page";
 import LegalPage from "@/app/legal/page";
 import SupportPage from "@/app/support/page";
@@ -80,7 +82,30 @@ createRoot(document.getElementById("root")!).render(
                 </RequireAuth>
               }
             />
-            <Route path="/order-success" element={<OrderSuccessPage />} />
+            <Route
+              path="/order-success"
+              element={
+                <RequireAuth>
+                  <OrderSuccessPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/orders"
+              element={
+                <RequireAuth>
+                  <OrdersPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/orders/:orderId"
+              element={
+                <RequireAuth>
+                  <OrderDetailPage />
+                </RequireAuth>
+              }
+            />
             <Route path="*" element={<HomePage />} />
           </Route>
           </Routes>

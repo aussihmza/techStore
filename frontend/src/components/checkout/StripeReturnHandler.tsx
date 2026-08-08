@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useStore } from "@/context/StoreContext";
+import { orderPathId } from "@/lib/order";
 
-/** Handles return from Stripe Checkout → completes order → stays on home */
+/** Handles return from Stripe Checkout → completes order → order success */
 export default function StripeReturnHandler() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
@@ -38,8 +39,9 @@ export default function StripeReturnHandler() {
         return;
       }
 
-      setMessage("Payment successful. Welcome back!");
-      window.setTimeout(() => setMessage(""), 3500);
+      navigate(`/order-success?id=${orderPathId(result.order.id)}`, {
+        replace: true,
+      });
     }
 
     void finish();

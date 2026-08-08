@@ -227,11 +227,21 @@ function ProfileMenu({
               </div>
 
               <div className="border-t border-slate-100 p-2">
+                <Link
+                  to="/orders"
+                  onClick={() => setOpen(false)}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-brand/5 hover:text-brand"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand/10 text-brand">
+                    <OrdersIcon className="h-4 w-4" />
+                  </span>
+                  My Orders
+                </Link>
                 <button
                   type="button"
                   disabled={loggingOut}
                   onClick={() => void handleLogout()}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-60"
+                  className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-60"
                 >
                   <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 text-rose-500">
                     <LogoutIcon className="h-4 w-4" />
@@ -257,6 +267,28 @@ function ProfileMenu({
         </div>
       )}
     </div>
+  );
+}
+
+function OrdersIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M8 6h13" />
+      <path d="M8 12h13" />
+      <path d="M8 18h13" />
+      <path d="M3 6h.01" />
+      <path d="M3 12h.01" />
+      <path d="M3 18h.01" />
+    </svg>
   );
 }
 

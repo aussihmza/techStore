@@ -1,13 +1,43 @@
-import { Link, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useStore } from "@/context/StoreContext";
+import type { PlacedOrder } from "@/types/order";
+import { orderPathId } from "@/lib/order";
 import OrderSuccessCard from "@/components/order-success/OrderSuccessCard";
 import { ArrowRightIcon, CheckCircleIcon } from "@/components/ui/icons";
 
 export default function OrderSuccessPage() {
-  const { lastOrder } = useStore();
+  const { lastOrder, findOrder, isLoggedIn, authReady } = useStore();
+  const [params] = useSearchParams();
+  const queryId = params.get("id")?.trim() || "";
+  const [order, setOrder] = useState<PlacedOrder | null>(lastOrder);
+  const [loading, setLoading] = useState(Boolean(queryId));
 
-  if (!lastOrder) {
-    return <Navigate to="/shop" replace />;
+  useEffect(() => {
+    if (!queryId || !authReady || !isLoggedIn) {
+      setOrder(lastOrder);
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+    void findOrder(queryId).then((match) => {
+      if (!active) return;
+      setOrder(match || lastOrder);
+      setLoading(false);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [queryId, authReady, isLoggedIn, findOrder, lastOrder]);
+
+  if (!authReady || loading) {
+    return <p className="page-shell py-16 text-center text-slate-500">Loading order...</p>;
+  }
+
+  if (!order) {
+    return <Navigate to="/orders" replace />;
   }
 
   return (
@@ -22,13 +52,12 @@ export default function OrderSuccessPage() {
             Thank you for your purchase!
           </h1>
           <p className="mt-4 max-w-md text-lg text-slate-500">
-            Your high-performance tech is on its way to you. We&apos;ve sent a confirmation email
-            with all the details.
+            Your order is confirmed. You can track shipment status anytime from My Orders.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4">
             <Link
-              to="/shop"
+              to={`/orders/${orderPathId(order.id)}`}
               className="inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark"
             >
               View Order
@@ -43,7 +72,7 @@ export default function OrderSuccessPage() {
           </div>
         </div>
 
-        <OrderSuccessCard order={lastOrder} />
+        <OrderSuccessCard order={order} />
       </div>
 
       <p className="pb-16 text-center text-base text-slate-500">

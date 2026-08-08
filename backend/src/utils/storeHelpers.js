@@ -56,8 +56,30 @@ export function toWishlistItemResponse(item) {
   };
 }
 
+/** Derive shipment status from placedAt using the same 3–5 day delivery window. */
+export function deriveFulfillmentStatus(placedAt) {
+  const placed = new Date(placedAt).getTime();
+  if (Number.isNaN(placed)) {
+    return { status: "processing", statusLabel: "Processing" };
+  }
+
+  const hours = (Date.now() - placed) / (1000 * 60 * 60);
+
+  if (hours < 24) {
+    return { status: "processing", statusLabel: "Processing" };
+  }
+  if (hours < 72) {
+    return { status: "shipped", statusLabel: "In transit" };
+  }
+  if (hours < 120) {
+    return { status: "out_for_delivery", statusLabel: "Out for delivery" };
+  }
+  return { status: "delivered", statusLabel: "Delivered" };
+}
+
 export function toOrderResponse(order) {
   const doc = typeof order.toObject === "function" ? order.toObject() : order;
+  const fulfillment = deriveFulfillmentStatus(doc.placedAt);
 
   return {
     id: doc.orderId,
@@ -75,6 +97,8 @@ export function toOrderResponse(order) {
     paymentStatus: doc.paymentStatus,
     paymentMethod: doc.paymentMethod,
     stripeSessionId: doc.stripeSessionId,
+    status: fulfillment.status,
+    statusLabel: fulfillment.statusLabel,
   };
 }
 

@@ -2,8 +2,11 @@ import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useStore } from "@/context/StoreContext";
 import type { PlacedOrder } from "@/types/order";
-import { formatShippingAddress } from "@/lib/order";
-import { ClockIcon, ShieldIcon, TruckIcon } from "@/components/ui/icons";
+import { formatPrice } from "@/lib/cart";
+import { formatShippingAddress, orderPathId } from "@/lib/order";
+import OrderStatusBadge from "@/components/orders/OrderStatusBadge";
+import OrderTimeline from "@/components/orders/OrderTimeline";
+import { ShieldIcon, TruckIcon } from "@/components/ui/icons";
 
 const sections = [
   { id: "returns-warranty", title: "Returns & Warranty" },
@@ -171,10 +174,11 @@ export default function SupportPage() {
                     </p>
                     <p className="mt-1 text-xl font-bold text-ink">{tracked.id}</p>
                   </div>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                    <ClockIcon className="h-3.5 w-3.5" />
-                    In transit
-                  </span>
+                  <OrderStatusBadge
+                    status={tracked.status}
+                    statusLabel={tracked.statusLabel}
+                    placedAt={tracked.placedAt}
+                  />
                 </div>
 
                 <dl className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -207,14 +211,20 @@ export default function SupportPage() {
                       Total
                     </dt>
                     <dd className="mt-1 text-sm font-medium text-ink">
-                      $
-                      {tracked.total.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
+                      {formatPrice(tracked.total)}
                     </dd>
                   </div>
                 </dl>
+
+                <div className="mt-6 border-t border-slate-200 pt-5">
+                  <OrderTimeline order={tracked} />
+                  <Link
+                    to={`/orders/${orderPathId(tracked.id)}`}
+                    className="mt-5 inline-flex text-sm font-semibold text-brand hover:underline"
+                  >
+                    Open full order details
+                  </Link>
+                </div>
               </div>
             )}
 

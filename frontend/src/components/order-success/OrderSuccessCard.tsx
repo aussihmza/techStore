@@ -1,8 +1,9 @@
 import type { PlacedOrder } from "@/types/order";
 import { formatPrice } from "@/lib/cart";
 import { formatShippingAddress } from "@/lib/order";
+import OrderStatusBadge from "@/components/orders/OrderStatusBadge";
 import ProductImage from "@/components/ui/ProductImage";
-import { ClockIcon, TruckIcon } from "@/components/ui/icons";
+import { TruckIcon } from "@/components/ui/icons";
 
 export default function OrderSuccessCard({ order }: { order: PlacedOrder }) {
   const previewItems = order.items.slice(0, 2);
@@ -15,10 +16,11 @@ export default function OrderSuccessCard({ order }: { order: PlacedOrder }) {
           <p className="text-xs font-semibold uppercase tracking-wide text-brand">Order Confirmed</p>
           <p className="mt-1 text-2xl font-extrabold text-ink">{order.id}</p>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold text-brand">
-          <ClockIcon className="h-3.5 w-3.5" />
-          Estimated Delivery
-        </span>
+        <OrderStatusBadge
+          status={order.status}
+          statusLabel={order.statusLabel}
+          placedAt={order.placedAt}
+        />
       </div>
 
       <div className="mt-5 flex items-start gap-3 rounded-xl bg-slate-50 p-4">
