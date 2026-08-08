@@ -1,9 +1,9 @@
 import ProductImage from "@/components/ui/ProductImage";
 
 const stats = [
-  { value: "2.4M", label: "Devices Shipped" },
-  { value: "48", label: "Design Awards" },
-  { value: "12", label: "Global Hubs" },
+  { value: "Curated", label: "Product catalog" },
+  { value: "1-Year", label: "Limited warranty" },
+  { value: "Free", label: "Standard shipping" },
 ];
 
 export default function PrecisionSection() {

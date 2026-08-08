@@ -1,18 +1,48 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { ChevronDownIcon } from "@/components/ui/icons";
 
 const faqs = [
   {
     q: "How long does shipping take?",
-    a: "Most orders are processed within 24 hours. Domestic shipping typically takes 2-4 business days, while international shipping ranges from 5-10 business days depending on the destination.",
+    a: (
+      <>
+        Orders usually process within 1–2 business days. Free standard shipping typically arrives in{" "}
+        <strong className="font-semibold text-ink">3–5 business days</strong>. See full details on our{" "}
+        <Link to="/support#shipping-info" className="font-semibold text-brand hover:underline">
+          Shipping Info
+        </Link>{" "}
+        page.
+      </>
+    ),
   },
   {
     q: "What is your warranty policy?",
-    a: "All products come with a minimum 2-year limited warranty covering manufacturing defects. Extended coverage is available at checkout for select items.",
+    a: (
+      <>
+        TechStore products include at least a{" "}
+        <strong className="font-semibold text-ink">1-year limited manufacturer warranty</strong> for
+        defects in materials and workmanship under normal use. There is no extended coverage add-on
+        at checkout. Read{" "}
+        <Link to="/support#returns-warranty" className="font-semibold text-brand hover:underline">
+          Returns & Warranty
+        </Link>{" "}
+        for claim steps.
+      </>
+    ),
   },
   {
-    q: "Do you offer corporate discounts?",
-    a: "Yes. We offer volume-based pricing and dedicated account management for teams and enterprises. Reach out to our sales team to get started.",
+    q: "Do you offer volume or team pricing?",
+    a: (
+      <>
+        For multi-unit purchases, use our{" "}
+        <Link to="/contact" className="font-semibold text-brand hover:underline">
+          contact form
+        </Link>{" "}
+        with your item list and quantity. Our support team will reply with availability and the best
+        pricing we can offer — there is no separate corporate portal.
+      </>
+    ),
   },
 ];
 
@@ -24,7 +54,7 @@ export default function FaqSection() {
       <div className="mx-auto max-w-2xl text-center">
         <h2 className="section-heading text-3xl sm:text-4xl">Frequently Asked Questions</h2>
         <p className="section-sub mt-3 text-lg">
-          Quick answers to the most common questions about our products and services.
+          Quick answers aligned with how TechStore actually ships, supports, and sells.
         </p>
       </div>
 
