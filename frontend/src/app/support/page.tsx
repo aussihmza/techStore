@@ -9,6 +9,7 @@ import OrderTimeline from "@/components/orders/OrderTimeline";
 import { ShieldIcon, TruckIcon } from "@/components/ui/icons";
 
 const sections = [
+  { id: "shipping-info", title: "Shipping Info" },
   { id: "returns-warranty", title: "Returns & Warranty" },
   { id: "order-tracking", title: "Order Tracking" },
 ];
@@ -54,11 +55,10 @@ export default function SupportPage() {
         <div className="mx-auto max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-wider text-brand">Customer Service</p>
           <h1 className="section-heading mt-2 text-3xl sm:text-4xl">
-            Returns, Warranty & Tracking
+            Shipping, Returns & Tracking
           </h1>
           <p className="mt-3 text-base text-slate-500">
-            Everything you need to return a product, claim warranty coverage, or track your TechStore
-            order.
+            Delivery options, return and warranty coverage, and tools to track your TechStore order.
           </p>
 
           <nav
@@ -76,8 +76,71 @@ export default function SupportPage() {
             ))}
           </nav>
 
+          {/* Shipping Info */}
+          <section id="shipping-info" className="scroll-mt-24 mt-14">
+            <div className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand/10 text-brand">
+                <TruckIcon className="h-5 w-5" />
+              </span>
+              <h2 className="text-2xl font-bold text-ink sm:text-3xl">Shipping Info</h2>
+            </div>
+            <p className="mt-2 text-sm text-slate-400">How TechStore delivers your order</p>
+
+            <div className="mt-8 space-y-8">
+              <div>
+                <h3 className="text-lg font-semibold text-ink">Standard shipping (free)</h3>
+                <p className="mt-2 text-base leading-relaxed text-slate-500">
+                  Every eligible order includes free standard shipping. Most orders ship within 1–2
+                  business days after payment is confirmed (card) or after COD order placement.
+                  Estimated delivery is typically <strong className="font-semibold text-ink">3–5 business days</strong>{" "}
+                  and appears on your checkout confirmation and order details.
+                </p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-ink">Processing & cut-off</h3>
+                <p className="mt-2 text-base leading-relaxed text-slate-500">
+                  Orders placed on weekdays before 2:00 PM local warehouse time usually begin
+                  processing the same day. Weekend and holiday orders start the next business day.
+                  You will see status updates move from Processing → In transit → Out for delivery →
+                  Delivered in{" "}
+                  <Link to="/orders" className="font-medium text-brand hover:underline">
+                    My Orders
+                  </Link>
+                  .
+                </p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-ink">Delivery areas</h3>
+                <p className="mt-2 text-base leading-relaxed text-slate-500">
+                  We currently deliver to addresses that can be entered at checkout (city, state, and
+                  ZIP). If a carrier cannot reach your location, support will contact you with
+                  alternate options before canceling the shipment.
+                </p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-ink">Cash on Delivery vs card</h3>
+                <p className="mt-2 text-base leading-relaxed text-slate-500">
+                  COD and card orders use the same shipping window. Card payments are confirmed
+                  before fulfillment; COD orders are prepared after placement and paid on delivery.
+                  Shipping itself remains free on both methods.
+                </p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-ink">Delays & help</h3>
+                <p className="mt-2 text-base leading-relaxed text-slate-500">
+                  Weather, carrier volume, or address issues can add a short delay. If tracking has
+                  not updated for 48 hours after the ship date,{" "}
+                  <Link to="/contact" className="font-medium text-brand hover:underline">
+                    contact support
+                  </Link>{" "}
+                  with your order ID and we will investigate with the carrier.
+                </p>
+              </div>
+            </div>
+          </section>
+
           {/* Returns & Warranty */}
-          <section id="returns-warranty" className="scroll-mt-24 mt-14">
+          <section id="returns-warranty" className="scroll-mt-24 mt-16 border-t border-slate-100 pt-14">
             <div className="flex items-center gap-3">
               <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand/10 text-brand">
                 <ShieldIcon className="h-5 w-5" />

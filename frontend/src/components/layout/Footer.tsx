@@ -13,7 +13,7 @@ const columns = [
   {
     title: "Customer Service",
     links: [
-      { label: "Shipping Info", href: "/contact" },
+      { label: "Shipping Info", href: "/support#shipping-info" },
       { label: "Returns & Warranty", href: "/support#returns-warranty" },
       { label: "My Orders", href: "/orders" },
       { label: "Order Tracking", href: "/support#order-tracking" },
