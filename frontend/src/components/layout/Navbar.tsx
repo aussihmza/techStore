@@ -38,15 +38,48 @@ export default function Navbar() {
   const navigate = useNavigate();
   const { wishlistCount, cartCount, isLoggedIn, requireAuth, logout, user } =
     useStore();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const goProtected = (path: string) => {
     if (!requireAuth()) return;
     navigate(path);
   };
 
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [menuOpen]);
+
   return (
     <header className="sticky top-0 z-50 border-b border-white/60 bg-white/75 shadow-[0_8px_30px_-18px_rgba(15,23,42,0.25)] backdrop-blur-xl">
-      <div className="page-shell flex h-[4.75rem] items-center gap-6 lg:gap-8">
+      <div className="page-shell flex h-[4.75rem] items-center gap-3 sm:gap-6 lg:gap-8">
+        <button
+          type="button"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-brand/5 hover:text-brand md:hidden"
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={menuOpen}
+          aria-controls="mobile-nav"
+          onClick={() => setMenuOpen((prev) => !prev)}
+        >
+          {menuOpen ? <CloseIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
+        </button>
+
         <Link
           to="/"
           className="font-display text-2xl font-extrabold tracking-tight text-brand transition-opacity hover:opacity-90 sm:text-3xl"
@@ -77,8 +110,8 @@ export default function Navbar() {
           })}
         </nav>
 
-        <div className="ml-auto flex items-center gap-2 sm:gap-3">
-          <SearchBar />
+        <div className="ml-auto flex items-center gap-1 sm:gap-3">
+          <SearchBar className="hidden sm:block" />
 
           <IconButton
             label="Wishlist"
@@ -110,6 +143,45 @@ export default function Navbar() {
           />
         </div>
       </div>
+
+      {menuOpen ? (
+        <div
+          id="mobile-nav"
+          className="border-t border-slate-200/80 bg-white/95 md:hidden"
+        >
+          <div className="page-shell space-y-5 py-4 pb-6">
+            <SearchBar
+              className="w-full"
+              inputClassName="w-full"
+              autoFocus
+              onNavigate={() => setMenuOpen(false)}
+            />
+
+            <nav className="flex flex-col gap-1">
+              {navLinks.map((link) => {
+                const active =
+                  link.href !== "#" &&
+                  (pathname === link.href ||
+                    (link.href !== "/" && pathname.startsWith(`${link.href}/`)));
+                return (
+                  <Link
+                    key={link.label}
+                    to={link.href}
+                    onClick={() => setMenuOpen(false)}
+                    className={`rounded-xl px-3 py-3 text-base font-semibold transition-colors ${
+                      active
+                        ? "bg-brand/10 text-brand"
+                        : "text-slate-700 hover:bg-slate-50 hover:text-ink"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
+      ) : null}
     </header>
   );
 }
@@ -267,6 +339,41 @@ function ProfileMenu({
         </div>
       )}
     </div>
+  );
+}
+
+function MenuIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <line x1="4" y1="7" x2="20" y2="7" />
+      <line x1="4" y1="12" x2="20" y2="12" />
+      <line x1="4" y1="17" x2="20" y2="17" />
+    </svg>
+  );
+}
+
+function CloseIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <line x1="6" y1="6" x2="18" y2="18" />
+      <line x1="18" y1="6" x2="6" y2="18" />
+    </svg>
   );
 }
 
