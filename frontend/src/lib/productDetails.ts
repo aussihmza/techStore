@@ -363,7 +363,6 @@ export function getProductDetail(product: Product): ProductDetail {
     storageOptions: override.storageOptions ?? storageOptions,
     gallery: override.gallery ?? buildGallery(product),
     features: override.features ?? features,
-    monthlyPrice: override.monthlyPrice ?? Math.round((product.price / 24) * 100) / 100,
   };
 }
 

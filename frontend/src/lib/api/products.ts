@@ -71,6 +71,5 @@ export function toProductDetail(product: ApiProduct): ProductDetail {
     storageOptions: product.storageOptions ?? [],
     gallery: product.gallery?.length ? product.gallery : [product.image],
     features: product.features ?? [],
-    monthlyPrice: product.monthlyPrice,
   };
 }

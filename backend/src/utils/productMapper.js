@@ -29,7 +29,6 @@ export function toProductResponse(product) {
     storageOptions: doc.storageOptions,
     gallery: doc.gallery,
     features: doc.features,
-    monthlyPrice: doc.monthlyPrice,
     isFeatured: doc.isFeatured,
     isShop: doc.isShop,
     createdAt: doc.createdAt,

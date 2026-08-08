@@ -30,7 +30,6 @@ export interface ProductDetail {
   storageOptions: string[];
   gallery: string[];
   features: ProductFeature[];
-  monthlyPrice?: number;
 }
 
 export interface FilterOption {

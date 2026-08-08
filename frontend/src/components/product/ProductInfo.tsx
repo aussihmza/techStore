@@ -83,11 +83,6 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
         <p className="font-display text-3xl font-extrabold text-brand sm:text-4xl">
           {formatPrice(product.price)}
         </p>
-        {detail.monthlyPrice !== undefined && (
-          <p className="mt-1 text-sm text-slate-400">
-            or {formatPrice(detail.monthlyPrice)}/mo. for 24 mo. before trade-in
-          </p>
-        )}
       </div>
 
       {detail.storageOptions.length > 0 && (
