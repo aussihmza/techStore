@@ -26,7 +26,7 @@ const values: { Icon: IconType; title: string; description: string }[] = [
 
 export default function ValuesSection() {
   return (
-    <section className="py-16">
+    <section id="manifesto" className="scroll-mt-28 py-16">
       <div className="mx-auto max-w-2xl text-center">
         <h2 className="section-heading text-3xl sm:text-4xl">The TechStore DNA</h2>
         <p className="section-sub mt-3 text-lg">

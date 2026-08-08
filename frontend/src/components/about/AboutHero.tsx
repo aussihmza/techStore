@@ -23,9 +23,12 @@ export default function AboutHero() {
               We don't just sell electronics. We curate hardware for those who demand
               professional-grade performance and zero-compromise quality.
             </p>
-            <button type="button" className="btn-secondary mt-8 border-white/20 bg-white text-ink">
+            <a
+              href="#manifesto"
+              className="btn-secondary mt-8 border-white/20 bg-white text-ink"
+            >
               Our Manifesto
-            </button>
+            </a>
           </div>
         </div>
       </div>

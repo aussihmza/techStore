@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function EcosystemCta() {
   return (
     <section className="pb-20">
@@ -16,9 +18,12 @@ export default function EcosystemCta() {
         <p className="relative mx-auto mt-4 max-w-xl text-lg text-slate-300">
           Experience the difference that engineering excellence makes in your daily workflow.
         </p>
-        <button type="button" className="btn-secondary relative mt-8 border-white/15 bg-white text-ink">
+        <Link
+          to="/shop"
+          className="btn-secondary relative mt-8 inline-flex border-white/15 bg-white text-ink"
+        >
           Start Your Collection
-        </button>
+        </Link>
       </div>
     </section>
   );
