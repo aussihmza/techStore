@@ -13,6 +13,7 @@ import {
   getPromoDefinition,
   normalizePromoCode,
 } from "../config/promos.js";
+import { sendOrderConfirmationEmail } from "../utils/mail.js";
 
 function normalizeOrderQuery(orderId = "") {
   return orderId.trim().toUpperCase().replace(/^#/, "");
@@ -86,6 +87,11 @@ async function createOrderFromCart(userId, shipping, payment, promoCode) {
 
   cart.items = [];
   await cart.save();
+
+  // Never block checkout if SMTP fails
+  void sendOrderConfirmationEmail(order).catch((error) => {
+    console.error("[order-email] Unexpected error:", error?.message || error);
+  });
 
   return order;
 }
