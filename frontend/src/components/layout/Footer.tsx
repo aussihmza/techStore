@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { FacebookIcon, InstagramIcon, TwitterIcon } from "@/components/ui/icons";
 
 const columns = [
   {
@@ -55,17 +54,6 @@ export default function Footer() {
               Premium hardware picked for industry professionals. We deliver the standard for
               high-performance consumer electronics.
             </p>
-            <div className="mt-6 flex gap-3">
-              {[FacebookIcon, TwitterIcon, InstagramIcon].map((Icon, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all hover:-translate-y-0.5 hover:border-brand/40 hover:bg-brand hover:text-white"
-                >
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
-            </div>
           </div>
 
           {columns.map((col) => (

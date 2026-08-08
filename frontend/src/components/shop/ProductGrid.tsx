@@ -1,7 +1,11 @@
+import { useEffect, useMemo, useState } from "react";
 import type { Product } from "@/types/product";
 import type { SortOption } from "@/types/shop";
 import ProductCard from "@/components/shop/ProductCard";
+import Pagination from "@/components/shop/Pagination";
 import { ChevronDownIcon } from "@/components/ui/icons";
+
+const PAGE_SIZE = 9;
 
 interface ProductGridProps {
   products: Product[];
@@ -18,12 +22,43 @@ export default function ProductGrid({
   onSortChange,
   emptyHint,
 }: ProductGridProps) {
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
+
+  useEffect(() => {
+    setPage(1);
+  }, [products, sort]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  const pageProducts = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return products.slice(start, start + PAGE_SIZE);
+  }, [products, page]);
+
+  const showingFrom = products.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const showingTo = Math.min(page * PAGE_SIZE, products.length);
+
   return (
     <div className="flex-1">
       <div className="mb-5 flex items-center justify-between">
         <p className="text-base text-slate-500">
-          Showing <span className="font-medium text-ink">{products.length}</span> of{" "}
-          <span className="font-medium text-ink">{total}</span> products
+          {products.length > 0 ? (
+            <>
+              Showing{" "}
+              <span className="font-medium text-ink">
+                {showingFrom}–{showingTo}
+              </span>{" "}
+              of <span className="font-medium text-ink">{products.length}</span> products
+            </>
+          ) : (
+            <>
+              Showing <span className="font-medium text-ink">0</span> of{" "}
+              <span className="font-medium text-ink">{total}</span> products
+            </>
+          )}
         </p>
         <label className="flex items-center gap-2 text-base text-slate-500">
           Sort by
@@ -43,12 +78,15 @@ export default function ProductGrid({
         </label>
       </div>
 
-      {products.length > 0 ? (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+      {pageProducts.length > 0 ? (
+        <>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {pageProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        </>
       ) : (
         <div className="rounded-2xl border border-dashed border-slate-200 bg-white py-16 text-center">
           <p className="text-lg font-semibold text-ink">No products found</p>

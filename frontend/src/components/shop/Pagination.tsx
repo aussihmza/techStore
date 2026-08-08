@@ -1,40 +1,72 @@
-import { useState } from "react";
 import { ChevronDownIcon } from "@/components/ui/icons";
 
 interface PaginationProps {
-  pages?: number;
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
 }
 
-export default function Pagination({ pages = 12 }: PaginationProps) {
-  const [current, setCurrent] = useState(1);
-  const visible = [1, 2, 3];
+function getVisiblePages(page: number, totalPages: number): (number | "ellipsis")[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  const pages = new Set<number>([1, totalPages, page]);
+  for (let offset = 1; offset <= 1; offset += 1) {
+    if (page - offset > 1) pages.add(page - offset);
+    if (page + offset < totalPages) pages.add(page + offset);
+  }
+
+  const sorted = [...pages].sort((a, b) => a - b);
+  const result: (number | "ellipsis")[] = [];
+
+  for (let i = 0; i < sorted.length; i += 1) {
+    const current = sorted[i];
+    const prev = sorted[i - 1];
+    if (i > 0 && current - prev > 1) {
+      result.push("ellipsis");
+    }
+    result.push(current);
+  }
+
+  return result;
+}
+
+export default function Pagination({ page, totalPages, onPageChange }: PaginationProps) {
+  if (totalPages <= 1) return null;
+
+  const visible = getVisiblePages(page, totalPages);
 
   return (
     <div className="mt-10 flex items-center justify-center gap-2">
       <PageButton
         ariaLabel="Previous page"
-        disabled={current === 1}
-        onClick={() => setCurrent((p) => Math.max(1, p - 1))}
+        disabled={page === 1}
+        onClick={() => onPageChange(page - 1)}
       >
         <ChevronDownIcon className="h-4 w-4 rotate-90" />
       </PageButton>
 
-      {visible.map((page) => (
-        <PageButton key={page} active={page === current} onClick={() => setCurrent(page)}>
-          {page}
-        </PageButton>
-      ))}
-
-      <span className="px-1 text-slate-400">…</span>
-
-      <PageButton active={pages === current} onClick={() => setCurrent(pages)}>
-        {pages}
-      </PageButton>
+      {visible.map((item, index) =>
+        item === "ellipsis" ? (
+          <span key={`ellipsis-${index}`} className="px-1 text-slate-400">
+            …
+          </span>
+        ) : (
+          <PageButton
+            key={item}
+            active={item === page}
+            onClick={() => onPageChange(item)}
+          >
+            {item}
+          </PageButton>
+        ),
+      )}
 
       <PageButton
         ariaLabel="Next page"
-        disabled={current === pages}
-        onClick={() => setCurrent((p) => Math.min(pages, p + 1))}
+        disabled={page === totalPages}
+        onClick={() => onPageChange(page + 1)}
       >
         <ChevronDownIcon className="h-4 w-4 -rotate-90" />
       </PageButton>
