@@ -23,7 +23,7 @@ export const authController = {
   }),
 
   me: asyncHandler(async (req, res) => {
-    const data = authService.getMe(req.user);
+    const data = await authService.getMe(req.user);
     return ApiResponse(res, 200, data, "OK");
   }),
 

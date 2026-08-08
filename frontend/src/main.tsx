@@ -24,6 +24,13 @@ import SignupPage from "@/app/signup/page";
 import ForgotPasswordPage from "@/app/forgot-password/page";
 import ResetPasswordPage from "@/app/reset-password/page";
 import RequireAuth from "@/components/auth/RequireAuth";
+import RequireAdmin from "@/admin/components/RequireAdmin";
+import AdminShell from "@/admin/components/AdminShell";
+import AdminDashboardPage from "@/admin/pages/DashboardPage";
+import AdminProductsPage from "@/admin/pages/ProductsPage";
+import AdminOrdersPage from "@/admin/pages/OrdersPage";
+import AdminReviewsPage from "@/admin/pages/ReviewsPage";
+import AdminReturnsPage from "@/admin/pages/ReturnsPage";
 
 const CheckoutPage = lazy(() => import("@/app/checkout/page"));
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
@@ -35,6 +42,20 @@ createRoot(document.getElementById("root")!).render(
         <ScrollToTop />
         <StoreProvider>
           <Routes>
+          <Route
+            path="/admin"
+            element={
+              <RequireAdmin>
+                <AdminShell />
+              </RequireAdmin>
+            }
+          >
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="products" element={<AdminProductsPage />} />
+            <Route path="orders" element={<AdminOrdersPage />} />
+            <Route path="reviews" element={<AdminReviewsPage />} />
+            <Route path="returns" element={<AdminReturnsPage />} />
+          </Route>
           <Route element={<Layout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/shop" element={<ShopPage />} />

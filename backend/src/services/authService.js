@@ -1,6 +1,7 @@
 import { User } from "../models/User.js";
 import { Cart } from "../models/Cart.js";
 import { Wishlist } from "../models/Wishlist.js";
+import { env } from "../config/env.js";
 import { ApiError } from "../utils/ApiError.js";
 import {
   comparePassword,
@@ -34,11 +35,24 @@ async function createUserDefaults(userId) {
   ]);
 }
 
-function authPayload(user) {
+/** Promote configured emails to admin (does not demote existing admins). */
+async function ensureAdminRole(user) {
+  if (!user) return user;
+  const email = normalizeEmail(user.email || "");
+  if (env.adminEmails.includes(email) && user.role !== "admin") {
+    user.role = "admin";
+    await user.save();
+  }
+  return user;
+}
+
+async function authPayload(user) {
+  await ensureAdminRole(user);
   const publicUser = toPublicUser(user);
   const token = signToken({
     sub: publicUser.id,
     email: publicUser.email,
+    role: publicUser.role,
   });
 
   return { user: publicUser, token };
@@ -67,10 +81,11 @@ export const authService = {
       name: trimmedName || normalizedEmail.split("@")[0],
       email: normalizedEmail,
       password: await hashPassword(rawPassword),
+      role: env.adminEmails.includes(normalizedEmail) ? "admin" : "user",
     });
 
     await createUserDefaults(user._id);
-    return authPayload(user);
+    return await authPayload(user);
   },
 
   async login({ email, password }) {
@@ -98,7 +113,7 @@ export const authService = {
       throw new ApiError(401, "Incorrect password. Please try again.");
     }
 
-    return authPayload(user);
+    return await authPayload(user);
   },
 
   async googleLogin({ idToken }) {
@@ -116,6 +131,7 @@ export const authService = {
         googleId: profile.googleId,
         authProvider: "google",
         password: null,
+        role: env.adminEmails.includes(normalizedEmail) ? "admin" : "user",
       });
       await createUserDefaults(user._id);
     } else {
@@ -131,10 +147,11 @@ export const authService = {
       await user.save();
     }
 
-    return authPayload(user);
+    return await authPayload(user);
   },
 
-  getMe(user) {
+  async getMe(user) {
+    await ensureAdminRole(user);
     return { user: toPublicUser(user) };
   },
 

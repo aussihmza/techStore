@@ -154,9 +154,21 @@ export function deriveFulfillmentStatus(placedAt) {
   return { status: "delivered", statusLabel: "Delivered" };
 }
 
+const FULFILLMENT_LABELS = {
+  processing: "Processing",
+  shipped: "In transit",
+  out_for_delivery: "Out for delivery",
+  delivered: "Delivered",
+};
+
 export function toOrderResponse(order) {
   const doc = typeof order.toObject === "function" ? order.toObject() : order;
-  const fulfillment = deriveFulfillmentStatus(doc.placedAt);
+  const derived = deriveFulfillmentStatus(doc.placedAt);
+  const status =
+    doc.fulfillmentStatus && FULFILLMENT_LABELS[doc.fulfillmentStatus]
+      ? doc.fulfillmentStatus
+      : derived.status;
+  const statusLabel = FULFILLMENT_LABELS[status] || derived.statusLabel;
 
   return {
     id: doc.orderId,
@@ -174,8 +186,8 @@ export function toOrderResponse(order) {
     paymentStatus: doc.paymentStatus,
     paymentMethod: doc.paymentMethod,
     stripeSessionId: doc.stripeSessionId,
-    status: fulfillment.status,
-    statusLabel: fulfillment.statusLabel,
+    status,
+    statusLabel,
   };
 }
 

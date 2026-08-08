@@ -133,6 +133,7 @@ export default function Navbar() {
 
           <ProfileMenu
             isLoggedIn={isLoggedIn}
+            isAdmin={user?.role === "admin"}
             name={user?.name}
             email={user?.email}
             active={pathname === "/login" || pathname === "/signup"}
@@ -188,6 +189,7 @@ export default function Navbar() {
 
 interface ProfileMenuProps {
   isLoggedIn: boolean;
+  isAdmin?: boolean;
   name?: string;
   email?: string;
   active?: boolean;
@@ -196,6 +198,7 @@ interface ProfileMenuProps {
 
 function ProfileMenu({
   isLoggedIn,
+  isAdmin = false,
   name,
   email,
   active,
@@ -299,6 +302,18 @@ function ProfileMenu({
               </div>
 
               <div className="border-t border-slate-100 p-2">
+                {isAdmin ? (
+                  <Link
+                    to="/admin"
+                    onClick={() => setOpen(false)}
+                    className="mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-brand/5 hover:text-brand"
+                  >
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand/10 text-brand">
+                      <OrdersIcon className="h-4 w-4" />
+                    </span>
+                    Admin Panel
+                  </Link>
+                ) : null}
                 <Link
                   to="/orders"
                   onClick={() => setOpen(false)}

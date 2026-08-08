@@ -11,8 +11,6 @@ router.post("/:id/reviews", requireAuth, reviewController.create);
 router.put("/:id/reviews/me", requireAuth, reviewController.updateMine);
 router.delete("/:id/reviews/me", requireAuth, reviewController.deleteMine);
 router.get("/:id", productController.getById);
-router.post("/", productController.create);
-router.put("/:id", productController.update);
-router.delete("/:id", productController.remove);
+// Product writes live under /api/admin/products (admin only).
 
 export default router;

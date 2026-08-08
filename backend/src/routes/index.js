@@ -11,6 +11,7 @@ import newsletterRoutes from "./newsletterRoutes.js";
 import promoRoutes from "./promoRoutes.js";
 import paymentRoutes from "./paymentRoutes.js";
 import returnRoutes from "./returnRoutes.js";
+import adminRoutes from "../admin/routes.js";
 
 const router = Router();
 
@@ -30,5 +31,6 @@ router.use("/newsletter", newsletterRoutes);
 router.use("/promo", promoRoutes);
 router.use("/payments", paymentRoutes);
 router.use("/returns", returnRoutes);
+router.use("/admin", adminRoutes);
 
 export default router;

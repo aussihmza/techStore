@@ -44,6 +44,7 @@ export type { CartLine };
 export interface AuthUser {
   name: string;
   email: string;
+  role: "user" | "admin";
 }
 
 type AuthResult = { ok: true } | { ok: false; error: string };
@@ -121,12 +122,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const applySession = useCallback(
     (snapshot: {
-      user: { name: string; email: string };
+      user: { name: string; email: string; role?: "user" | "admin" };
       cart: { items: CartLine[] };
       wishlist: { products: Product[] };
       orders: { orders: PlacedOrder[] };
     }) => {
-      setUser({ name: snapshot.user.name, email: snapshot.user.email });
+      setUser({
+        name: snapshot.user.name,
+        email: snapshot.user.email,
+        role: snapshot.user.role === "admin" ? "admin" : "user",
+      });
       setCart(snapshot.cart.items);
       setWishlist(snapshot.wishlist.products);
       setOrders(snapshot.orders.orders);

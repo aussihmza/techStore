@@ -17,4 +17,9 @@ export const env = {
   smtpPass: process.env.SMTP_PASS || "",
   smtpFrom: process.env.SMTP_FROM || "",
   googleClientId: process.env.GOOGLE_CLIENT_ID || "",
+  /** Comma-separated emails promoted to admin on login/register. */
+  adminEmails: String(process.env.ADMIN_EMAILS || "")
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean),
 };

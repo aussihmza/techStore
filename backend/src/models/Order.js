@@ -82,6 +82,12 @@ const orderSchema = new mongoose.Schema(
       enum: ["pending", "paid", "failed", "refunded"],
       default: "pending",
     },
+    /** When set by admin, overrides time-based derived status. */
+    fulfillmentStatus: {
+      type: String,
+      enum: ["processing", "shipped", "out_for_delivery", "delivered"],
+      default: null,
+    },
     stripeSessionId: {
       type: String,
       sparse: true,
