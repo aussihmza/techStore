@@ -1,12 +1,15 @@
 import { Link } from "react-router-dom";
 import type { Collection } from "@/types/product";
-import { getProductCountForCategory } from "@/utils/shopFilters";
 import ProductImage from "@/components/ui/ProductImage";
 import { ArrowRightIcon } from "@/components/ui/icons";
 
-export default function CategoryCard({ collection }: { collection: Collection }) {
-  const productCount = getProductCountForCategory(collection.slug);
-
+export default function CategoryCard({
+  collection,
+  productCount = 0,
+}: {
+  collection: Collection;
+  productCount?: number;
+}) {
   return (
     <Link
       to={`/categories/${collection.slug}`}

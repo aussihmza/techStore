@@ -17,6 +17,8 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const { cart, placeOrder } = useStore();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const { subtotal, taxes, total } = useMemo(() => {
     const sub = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
@@ -27,25 +29,28 @@ export default function CheckoutPage() {
     return <Navigate to="/cart" replace />;
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
+    setLoading(true);
+    setError("");
 
-    placeOrder({
-      items: [...cart],
-      subtotal,
-      taxes,
-      total,
-      shipping: {
-        firstName: String(data.get("firstName") ?? ""),
-        lastName: String(data.get("lastName") ?? ""),
-        email: String(data.get("email") ?? ""),
-        address: String(data.get("address") ?? ""),
-        city: String(data.get("city") ?? ""),
-        state: String(data.get("state") ?? ""),
-        zip: String(data.get("zip") ?? ""),
-      },
+    const result = await placeOrder({
+      firstName: String(data.get("firstName") ?? ""),
+      lastName: String(data.get("lastName") ?? ""),
+      email: String(data.get("email") ?? ""),
+      address: String(data.get("address") ?? ""),
+      city: String(data.get("city") ?? ""),
+      state: String(data.get("state") ?? ""),
+      zip: String(data.get("zip") ?? ""),
     });
+
+    setLoading(false);
+
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
 
     navigate("/order-success");
   };
@@ -151,8 +156,19 @@ export default function CheckoutPage() {
           </StepSection>
         </div>
 
-        <div className="lg:col-span-1">
-          <CheckoutOrderSummary items={cart} subtotal={subtotal} taxes={taxes} total={total} />
+        <div className="space-y-4 lg:col-span-1">
+          {error && (
+            <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">
+              {error}
+            </p>
+          )}
+          <CheckoutOrderSummary
+            items={cart}
+            subtotal={subtotal}
+            taxes={taxes}
+            total={total}
+            submitting={loading}
+          />
         </div>
       </form>
     </div>

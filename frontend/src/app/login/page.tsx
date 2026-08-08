@@ -5,16 +5,20 @@ import { useStore } from "@/context/StoreContext";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login, isLoggedIn } = useStore();
+  const { login, isLoggedIn, authReady } = useStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  if (isLoggedIn) return <Navigate to="/" replace />;
+  if (authReady && isLoggedIn) return <Navigate to="/" replace />;
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const result = login(email, password);
+    setLoading(true);
+    setError("");
+    const result = await login(email, password);
+    setLoading(false);
     if (!result.ok) {
       setError(result.error);
       return;
@@ -77,9 +81,10 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          className="w-full rounded-xl bg-brand px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark"
+          disabled={loading}
+          className="w-full rounded-xl bg-brand px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark disabled:opacity-60"
         >
-          Continue to TechStore
+          {loading ? "Signing in..." : "Continue to TechStore"}
         </button>
       </form>
 

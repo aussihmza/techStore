@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import type { ShopFilters } from "@/types/shop";
-import { catalogProducts } from "@/lib/products";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
+import type { Product } from "@/types/product";
+import type { ShopCategory, ShopFilters } from "@/types/shop";
+import { getCategoriesApi, toShopCategory } from "@/lib/api/categories";
+import { getProductsApi, toProductCard } from "@/lib/api/products";
 import {
   applyFilters,
   createDefaultFilters,
@@ -20,22 +22,57 @@ interface ShopCatalogProps {
 export default function ShopCatalog({ categorySlug, variant = "shop" }: ShopCatalogProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get("q")?.trim() ?? "";
-  const maxPrice = getMaxCatalogPrice();
-  const category = categorySlug ? getCategoryBySlug(categorySlug) : undefined;
 
-  const [filters, setFilters] = useState<ShopFilters>(() => createDefaultFilters(maxPrice));
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<ShopCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const maxPrice = getMaxCatalogPrice(products);
+  const category = categorySlug ? getCategoryBySlug(categorySlug, categories) : undefined;
+
+  const [filters, setFilters] = useState<ShopFilters>(() => createDefaultFilters(0));
 
   useEffect(() => {
+    let active = true;
+
+    async function load() {
+      setLoading(true);
+      setError("");
+      try {
+        const [productsData, categoriesData] = await Promise.all([
+          getProductsApi(),
+          getCategoriesApi(),
+        ]);
+        if (!active) return;
+        setProducts(productsData.products.map(toProductCard));
+        setCategories(categoriesData.categories.map(toShopCategory));
+      } catch (err) {
+        if (!active) return;
+        setError(err instanceof Error ? err.message : "Failed to load products");
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    void load();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!products.length) return;
     setFilters((prev) => ({
-      ...createDefaultFilters(maxPrice),
+      ...createDefaultFilters(getMaxCatalogPrice(products)),
       sort: prev.sort,
       categories: category ? [category.filterKey] : [],
     }));
-  }, [categorySlug, category, maxPrice]);
+  }, [categorySlug, category, products]);
 
   const searchedProducts = useMemo(
-    () => searchProducts(catalogProducts, searchQuery),
-    [searchQuery],
+    () => searchProducts(products, searchQuery),
+    [products, searchQuery],
   );
 
   const totalInScope = useMemo(() => {
@@ -45,13 +82,13 @@ export default function ShopCatalog({ categorySlug, variant = "shop" }: ShopCata
   }, [category, searchedProducts]);
 
   const filteredProducts = useMemo(
-    () => applyFilters(searchedProducts, filters, categorySlug),
-    [searchedProducts, filters, categorySlug],
+    () => applyFilters(searchedProducts, filters, categories, categorySlug),
+    [searchedProducts, filters, categories, categorySlug],
   );
 
   const clearFilters = () => {
     setFilters({
-      ...createDefaultFilters(maxPrice),
+      ...createDefaultFilters(maxPrice || 0),
       categories: category ? [category.filterKey] : [],
     });
   };
@@ -61,6 +98,18 @@ export default function ShopCatalog({ categorySlug, variant = "shop" }: ShopCata
     next.delete("q");
     setSearchParams(next, { replace: true });
   };
+
+  if (loading) {
+    return <p className="py-16 text-center text-slate-500">Loading products...</p>;
+  }
+
+  if (error) {
+    return <p className="py-16 text-center text-rose-600">{error}</p>;
+  }
+
+  if (categorySlug && !category) {
+    return <Navigate to={variant === "categories" ? "/categories" : "/shop"} replace />;
+  }
 
   return (
     <>
@@ -118,9 +167,11 @@ export default function ShopCatalog({ categorySlug, variant = "shop" }: ShopCata
       <section className="flex flex-col items-stretch gap-8 pb-16 lg:flex-row">
         <div className="lg:w-80 lg:shrink-0">
           <FilterSidebar
+            products={products}
+            categories={categories}
             filters={filters}
             categorySlug={categorySlug}
-            onCategoriesChange={(categories) => setFilters((prev) => ({ ...prev, categories }))}
+            onCategoriesChange={(next) => setFilters((prev) => ({ ...prev, categories: next }))}
             onBrandsChange={(brands) => setFilters((prev) => ({ ...prev, brands }))}
             onMaxPriceChange={(maxPriceValue) =>
               setFilters((prev) => ({ ...prev, maxPrice: maxPriceValue }))

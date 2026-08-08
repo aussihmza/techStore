@@ -75,7 +75,7 @@ export function PlaceOrderButton({ disabled }: { disabled?: boolean }) {
       disabled={disabled}
       className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-50"
     >
-      Place Order
+      {disabled ? "Placing order..." : "Place Order"}
       <ArrowRightIcon className="h-5 w-5" />
     </button>
   );

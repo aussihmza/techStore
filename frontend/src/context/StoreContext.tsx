@@ -8,17 +8,23 @@ import {
   type ReactNode,
 } from "react";
 import type { Product } from "@/types/product";
-import type { CartLine, PlacedOrder } from "@/types/order";
-import { generateOrderId, getEstimatedDelivery } from "@/lib/order";
+import type { CartLine, PlacedOrder, ShippingInfo } from "@/types/order";
+import { ApiError } from "@/lib/api/client";
+import { loginApi, logoutApi, meApi, registerApi } from "@/lib/api/auth";
 import {
-  authenticateUser,
-  findOrderForUser,
-  getUser,
-  loadSessionEmail,
-  registerUser,
-  saveSessionEmail,
-  updateUserData,
-} from "@/lib/storage";
+  addCartItemApi,
+  clearCartApi,
+  getCartApi,
+  removeCartItemApi,
+  updateCartItemApi,
+} from "@/lib/api/cart";
+import {
+  getWishlistApi,
+  removeWishlistItemApi,
+  toggleWishlistApi,
+} from "@/lib/api/wishlist";
+import { getOrderByIdApi, getOrdersApi, placeOrderApi } from "@/lib/api/orders";
+import { clearLegacyStorage, getToken, setToken } from "@/lib/api/token";
 
 export type { CartLine };
 
@@ -27,9 +33,15 @@ export interface AuthUser {
   email: string;
 }
 
+type AuthResult = { ok: true } | { ok: false; error: string };
+type OrderResult =
+  | { ok: true; order: PlacedOrder }
+  | { ok: false; error: string };
+
 interface StoreContextValue {
   user: AuthUser | null;
   isLoggedIn: boolean;
+  authReady: boolean;
   loginPromptOpen: boolean;
   wishlist: Product[];
   cart: CartLine[];
@@ -41,27 +53,29 @@ interface StoreContextValue {
     name: string;
     email: string;
     password: string;
-  }) => { ok: true } | { ok: false; error: string };
-  login: (email: string, password: string) => { ok: true } | { ok: false; error: string };
-  logout: () => void;
+  }) => Promise<AuthResult>;
+  login: (email: string, password: string) => Promise<AuthResult>;
+  logout: () => Promise<void>;
   requireAuth: () => boolean;
   openLoginPrompt: () => void;
   closeLoginPrompt: () => void;
   isWishlisted: (id: string) => boolean;
-  toggleWishlist: (product: Product) => void;
-  removeFromWishlist: (id: string) => void;
-  addToCart: (product: Product) => void;
-  updateQty: (id: string, qty: number) => void;
-  removeFromCart: (id: string) => void;
-  clearCart: () => void;
-  placeOrder: (order: Omit<PlacedOrder, "id" | "deliveryFrom" | "deliveryTo" | "placedAt">) => PlacedOrder;
-  findOrder: (orderId: string) => PlacedOrder | null;
+  toggleWishlist: (product: Product) => Promise<void>;
+  removeFromWishlist: (id: string) => Promise<void>;
+  addToCart: (product: Product) => Promise<void>;
+  updateQty: (id: string, qty: number) => Promise<void>;
+  removeFromCart: (id: string) => Promise<void>;
+  clearCart: () => Promise<void>;
+  placeOrder: (shipping: ShippingInfo) => Promise<OrderResult>;
+  findOrder: (orderId: string) => Promise<PlacedOrder | null>;
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
 
-function toAuthUser(u: { name: string; email: string }): AuthUser {
-  return { name: u.name, email: u.email };
+function toErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof ApiError) return error.message;
+  if (error instanceof Error) return error.message;
+  return fallback;
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {
@@ -70,30 +84,54 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [wishlist, setWishlist] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartLine[]>([]);
   const [orders, setOrders] = useState<PlacedOrder[]>([]);
-  const [hydrated, setHydrated] = useState(false);
+  const [lastOrder, setLastOrder] = useState<PlacedOrder | null>(null);
+  const [authReady, setAuthReady] = useState(false);
 
-  // Restore session + per-user data on first mount
-  useEffect(() => {
-    const email = loadSessionEmail();
-    if (email) {
-      const stored = getUser(email);
-      if (stored) {
-        setUser(toAuthUser(stored));
-        setWishlist(stored.wishlist ?? []);
-        setCart(stored.cart ?? []);
-        setOrders(stored.orders ?? []);
-      } else {
-        saveSessionEmail(null);
-      }
-    }
-    setHydrated(true);
+  const resetStore = useCallback(() => {
+    setUser(null);
+    setWishlist([]);
+    setCart([]);
+    setOrders([]);
+    setLastOrder(null);
   }, []);
 
-  // Persist cart / wishlist / orders whenever they change for the logged-in user
+  const loadUserCollections = useCallback(async () => {
+    const [cartData, wishlistData, ordersData] = await Promise.all([
+      getCartApi(),
+      getWishlistApi(),
+      getOrdersApi(),
+    ]);
+    setCart(cartData.items);
+    setWishlist(wishlistData.products);
+    setOrders(ordersData.orders);
+    setLastOrder(ordersData.orders[0] ?? null);
+  }, []);
+
+  // Restore JWT session from API (no users localStorage)
   useEffect(() => {
-    if (!hydrated || !user) return;
-    updateUserData(user.email, { wishlist, cart, orders });
-  }, [hydrated, user, wishlist, cart, orders]);
+    clearLegacyStorage();
+
+    async function hydrate() {
+      const token = getToken();
+      if (!token) {
+        setAuthReady(true);
+        return;
+      }
+
+      try {
+        const me = await meApi();
+        setUser({ name: me.name, email: me.email });
+        await loadUserCollections();
+      } catch {
+        setToken(null);
+        resetStore();
+      } finally {
+        setAuthReady(true);
+      }
+    }
+
+    void hydrate();
+  }, [loadUserCollections, resetStore]);
 
   const openLoginPrompt = useCallback(() => setLoginPromptOpen(true), []);
   const closeLoginPrompt = useCallback(() => setLoginPromptOpen(false), []);
@@ -104,75 +142,189 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return false;
   }, [user]);
 
-  const applyUserData = useCallback((email: string) => {
-    const stored = getUser(email);
-    if (!stored) return;
-    setUser(toAuthUser(stored));
-    setWishlist(stored.wishlist ?? []);
-    setCart(stored.cart ?? []);
-    setOrders(stored.orders ?? []);
-    setLoginPromptOpen(false);
-  }, []);
-
   const signup = useCallback(
-    (input: { name: string; email: string; password: string }) => {
-      const result = registerUser(input);
-      if (!result.ok) return result;
-      applyUserData(result.user.email);
-      return { ok: true as const };
+    async (input: { name: string; email: string; password: string }) => {
+      try {
+        const me = await registerApi(input);
+        setUser({ name: me.name, email: me.email });
+        await loadUserCollections();
+        setLoginPromptOpen(false);
+        return { ok: true as const };
+      } catch (error) {
+        return {
+          ok: false as const,
+          error: toErrorMessage(error, "Could not create account."),
+        };
+      }
     },
-    [applyUserData],
+    [loadUserCollections],
   );
 
   const login = useCallback(
-    (email: string, password: string) => {
-      const result = authenticateUser(email, password);
-      if (!result.ok) return result;
-      applyUserData(result.user.email);
-      return { ok: true as const };
+    async (email: string, password: string) => {
+      try {
+        const me = await loginApi(email, password);
+        setUser({ name: me.name, email: me.email });
+        await loadUserCollections();
+        setLoginPromptOpen(false);
+        return { ok: true as const };
+      } catch (error) {
+        return {
+          ok: false as const,
+          error: toErrorMessage(error, "Could not log in."),
+        };
+      }
     },
-    [applyUserData],
+    [loadUserCollections],
   );
 
-  const logout = useCallback(() => {
-    saveSessionEmail(null);
-    setUser(null);
-    setWishlist([]);
-    setCart([]);
-    setOrders([]);
-  }, []);
+  const logout = useCallback(async () => {
+    try {
+      await logoutApi();
+    } catch {
+      setToken(null);
+    }
+    resetStore();
+  }, [resetStore]);
 
-  const placeOrder = useCallback(
-    (order: Omit<PlacedOrder, "id" | "deliveryFrom" | "deliveryTo" | "placedAt">) => {
-      const delivery = getEstimatedDelivery();
-      const placed: PlacedOrder = {
-        ...order,
-        id: generateOrderId(),
-        deliveryFrom: delivery.from,
-        deliveryTo: delivery.to,
-        placedAt: new Date().toISOString(),
-      };
-      setOrders((prev) => [placed, ...prev]);
-      setCart([]);
-      return placed;
-    },
-    [],
-  );
-
-  const findOrder = useCallback(
-    (orderId: string) => {
-      if (!user) return null;
-      return findOrderForUser(user.email, orderId);
+  const toggleWishlist = useCallback(
+    async (product: Product) => {
+      if (!user) {
+        setLoginPromptOpen(true);
+        return;
+      }
+      try {
+        const data = await toggleWishlistApi(product.id);
+        setWishlist(data.products);
+      } catch (error) {
+        console.error(toErrorMessage(error, "Wishlist update failed"));
+      }
     },
     [user],
   );
 
-  const lastOrder = orders[0] ?? null;
+  const removeFromWishlist = useCallback(
+    async (id: string) => {
+      if (!user) {
+        setLoginPromptOpen(true);
+        return;
+      }
+      try {
+        const data = await removeWishlistItemApi(id);
+        setWishlist(data.products);
+      } catch (error) {
+        console.error(toErrorMessage(error, "Wishlist remove failed"));
+      }
+    },
+    [user],
+  );
+
+  const addToCart = useCallback(
+    async (product: Product) => {
+      if (!user) {
+        setLoginPromptOpen(true);
+        return;
+      }
+      try {
+        const data = await addCartItemApi(product.id, 1);
+        setCart(data.items);
+      } catch (error) {
+        console.error(toErrorMessage(error, "Add to cart failed"));
+      }
+    },
+    [user],
+  );
+
+  const updateQty = useCallback(
+    async (id: string, qty: number) => {
+      if (!user) {
+        setLoginPromptOpen(true);
+        return;
+      }
+      try {
+        const data = await updateCartItemApi(id, qty);
+        setCart(data.items);
+      } catch (error) {
+        console.error(toErrorMessage(error, "Cart update failed"));
+      }
+    },
+    [user],
+  );
+
+  const removeFromCart = useCallback(
+    async (id: string) => {
+      if (!user) {
+        setLoginPromptOpen(true);
+        return;
+      }
+      try {
+        const data = await removeCartItemApi(id);
+        setCart(data.items);
+      } catch (error) {
+        console.error(toErrorMessage(error, "Cart remove failed"));
+      }
+    },
+    [user],
+  );
+
+  const clearCart = useCallback(async () => {
+    if (!user) return;
+    try {
+      const data = await clearCartApi();
+      setCart(data.items);
+    } catch (error) {
+      console.error(toErrorMessage(error, "Clear cart failed"));
+    }
+  }, [user]);
+
+  const placeOrder = useCallback(
+    async (shipping: ShippingInfo): Promise<OrderResult> => {
+      if (!user) {
+        setLoginPromptOpen(true);
+        return { ok: false, error: "Please log in first." };
+      }
+
+      try {
+        const data = await placeOrderApi(shipping);
+        setOrders((prev) => [data.order, ...prev]);
+        setLastOrder(data.order);
+        setCart([]);
+        return { ok: true, order: data.order };
+      } catch (error) {
+        return {
+          ok: false,
+          error: toErrorMessage(error, "Could not place order."),
+        };
+      }
+    },
+    [user],
+  );
+
+  const findOrder = useCallback(
+    async (orderId: string) => {
+      if (!user) return null;
+      const local = orders.find(
+        (o) =>
+          o.id.toUpperCase().replace(/^#/, "") ===
+          orderId.trim().toUpperCase().replace(/^#/, ""),
+      );
+      if (local) return local;
+
+      try {
+        const data = await getOrderByIdApi(orderId);
+        return data.order;
+      } catch {
+        return null;
+      }
+    },
+    [user, orders],
+  );
 
   const value = useMemo<StoreContextValue>(() => {
     return {
       user,
       isLoggedIn: Boolean(user),
+      authReady,
       loginPromptOpen,
       wishlist,
       cart,
@@ -187,62 +339,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       openLoginPrompt,
       closeLoginPrompt,
       isWishlisted: (id) => wishlist.some((p) => p.id === id),
-      toggleWishlist: (product) => {
-        if (!user) {
-          setLoginPromptOpen(true);
-          return;
-        }
-        setWishlist((prev) =>
-          prev.some((p) => p.id === product.id)
-            ? prev.filter((p) => p.id !== product.id)
-            : [...prev, product],
-        );
-      },
-      removeFromWishlist: (id) => {
-        if (!user) {
-          setLoginPromptOpen(true);
-          return;
-        }
-        setWishlist((prev) => prev.filter((p) => p.id !== id));
-      },
-      addToCart: (product) => {
-        if (!user) {
-          setLoginPromptOpen(true);
-          return;
-        }
-        setCart((prev) => {
-          const existing = prev.find((line) => line.id === product.id);
-          if (existing) {
-            return prev.map((line) =>
-              line.id === product.id ? { ...line, qty: line.qty + 1 } : line,
-            );
-          }
-          return [...prev, { ...product, qty: 1 }];
-        });
-      },
-      updateQty: (id, qty) => {
-        if (!user) {
-          setLoginPromptOpen(true);
-          return;
-        }
-        setCart((prev) => {
-          if (qty < 1) return prev.filter((line) => line.id !== id);
-          return prev.map((line) => (line.id === id ? { ...line, qty } : line));
-        });
-      },
-      removeFromCart: (id) => {
-        if (!user) {
-          setLoginPromptOpen(true);
-          return;
-        }
-        setCart((prev) => prev.filter((line) => line.id !== id));
-      },
-      clearCart: () => setCart([]),
+      toggleWishlist,
+      removeFromWishlist,
+      addToCart,
+      updateQty,
+      removeFromCart,
+      clearCart,
       placeOrder,
       findOrder,
     };
   }, [
     user,
+    authReady,
     loginPromptOpen,
     wishlist,
     cart,
@@ -254,6 +362,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     requireAuth,
     openLoginPrompt,
     closeLoginPrompt,
+    toggleWishlist,
+    removeFromWishlist,
+    addToCart,
+    updateQty,
+    removeFromCart,
+    clearCart,
     placeOrder,
     findOrder,
   ]);

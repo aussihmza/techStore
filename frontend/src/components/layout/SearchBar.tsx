@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { catalogProducts } from "@/lib/products";
+import type { Product } from "@/types/product";
+import { getProductsApi, toProductCard } from "@/lib/api/products";
 import { searchProducts } from "@/utils/shopFilters";
 import ProductImage from "@/components/ui/ProductImage";
 import { SearchIcon } from "@/components/ui/icons";
@@ -12,8 +13,22 @@ export default function SearchBar() {
   const rootRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
   const [open, setOpen] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
 
-  // Keep input in sync when landing on /shop?q=...
+  useEffect(() => {
+    let active = true;
+    getProductsApi()
+      .then((data) => {
+        if (active) setProducts(data.products.map(toProductCard));
+      })
+      .catch(() => {
+        if (active) setProducts([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   useEffect(() => {
     const q = searchParams.get("q") ?? "";
     setQuery(q);
@@ -21,8 +36,8 @@ export default function SearchBar() {
 
   const suggestions = useMemo(() => {
     if (query.trim().length < 1) return [];
-    return searchProducts(catalogProducts, query).slice(0, 6);
-  }, [query]);
+    return searchProducts(products, query).slice(0, 6);
+  }, [products, query]);
 
   useEffect(() => {
     const onPointerDown = (e: PointerEvent) => {

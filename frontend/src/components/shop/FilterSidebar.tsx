@@ -1,13 +1,15 @@
-import type { ShopFilters } from "@/types/shop";
+import type { Product } from "@/types/product";
+import type { ShopCategory, ShopFilters } from "@/types/shop";
 import {
   getBrandFilterCounts,
   getCategoryFilterCounts,
   getMaxCatalogPrice,
 } from "@/utils/shopFilters";
-import { catalogProducts } from "@/lib/products";
 import { StarIcon } from "@/components/ui/icons";
 
 interface FilterSidebarProps {
+  products: Product[];
+  categories: ShopCategory[];
   filters: ShopFilters;
   categorySlug?: string;
   onCategoriesChange: (categories: string[]) => void;
@@ -18,6 +20,8 @@ interface FilterSidebarProps {
 }
 
 export default function FilterSidebar({
+  products,
+  categories,
   filters,
   categorySlug,
   onCategoriesChange,
@@ -26,9 +30,14 @@ export default function FilterSidebar({
   onMinRatingChange,
   onClear,
 }: FilterSidebarProps) {
-  const maxCatalogPrice = getMaxCatalogPrice();
-  const categoryOptions = getCategoryFilterCounts(catalogProducts, filters, categorySlug);
-  const brandOptions = getBrandFilterCounts(catalogProducts, filters, categorySlug);
+  const maxCatalogPrice = getMaxCatalogPrice(products) || 1;
+  const categoryOptions = getCategoryFilterCounts(
+    products,
+    filters,
+    categories,
+    categorySlug,
+  );
+  const brandOptions = getBrandFilterCounts(products, filters, categories, categorySlug);
 
   const toggleCategory = (label: string) => {
     const next = filters.categories.includes(label)
@@ -87,7 +96,7 @@ export default function FilterSidebar({
           min={0}
           max={maxCatalogPrice}
           step={50}
-          value={filters.maxPrice}
+          value={Math.min(filters.maxPrice, maxCatalogPrice)}
           onChange={(e) => onMaxPriceChange(Number(e.target.value))}
           className="w-full accent-brand"
         />

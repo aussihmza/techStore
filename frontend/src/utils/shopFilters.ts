@@ -1,19 +1,26 @@
 import type { Product } from "@/types/product";
 import type { ShopCategory, ShopFilters, SortOption } from "@/types/shop";
-import { CATEGORY_MAP, catalogProducts, shopCategories } from "@/lib/products";
 
-export function getCategoryBySlug(slug: string): ShopCategory | undefined {
-  return shopCategories.find((c) => c.slug === slug);
+/** Maps shop filter keys → product.category values */
+export const CATEGORY_MAP: Record<string, string[]> = {
+  Laptops: ["Laptops"],
+  Phones: ["Smartphones"],
+  Audio: ["Audio"],
+  Tablets: ["Tablets"],
+  Wearables: ["Wearables"],
+  Cameras: ["Cameras", "Photography"],
+  Accessories: ["Accessories", "Storage"],
+};
+
+export function getCategoryBySlug(
+  slug: string,
+  categories: ShopCategory[],
+): ShopCategory | undefined {
+  return categories.find((c) => c.slug === slug);
 }
 
-export function getProductCountForCategory(slug: string): number {
-  const category = getCategoryBySlug(slug);
-  if (!category) return 0;
-  return catalogProducts.filter((p) => category.productCategories.includes(p.category)).length;
-}
-
-export function getMaxCatalogPrice(): number {
-  return Math.max(...catalogProducts.map((p) => p.price), 0);
+export function getMaxCatalogPrice(products: Product[]): number {
+  return Math.max(...products.map((p) => p.price), 0);
 }
 
 export function matchesFilterCategory(product: Product, filterKeys: string[]): boolean {
@@ -24,11 +31,12 @@ export function matchesFilterCategory(product: Product, filterKeys: string[]): b
 export function applyFilters(
   products: Product[],
   filters: ShopFilters,
+  categories: ShopCategory[],
   categorySlug?: string,
 ): Product[] {
   let result = [...products];
 
-  const locked = categorySlug ? getCategoryBySlug(categorySlug) : undefined;
+  const locked = categorySlug ? getCategoryBySlug(categorySlug, categories) : undefined;
   if (locked) {
     result = result.filter((p) => locked.productCategories.includes(p.category));
   }
@@ -67,9 +75,10 @@ export function sortProducts(products: Product[], sort: SortOption): Product[] {
 export function getCategoryFilterCounts(
   products: Product[],
   filters: ShopFilters,
+  categories: ShopCategory[],
   categorySlug?: string,
 ): { label: string; count: number }[] {
-  const base = getBaseForFacet(products, filters, "categories", categorySlug);
+  const base = getBaseForFacet(products, filters, categories, "categories", categorySlug);
 
   return Object.keys(CATEGORY_MAP)
     .map((label) => ({
@@ -82,9 +91,10 @@ export function getCategoryFilterCounts(
 export function getBrandFilterCounts(
   products: Product[],
   filters: ShopFilters,
+  categories: ShopCategory[],
   categorySlug?: string,
 ): { label: string; count: number }[] {
-  const base = getBaseForFacet(products, filters, "brands", categorySlug);
+  const base = getBaseForFacet(products, filters, categories, "brands", categorySlug);
   const brands = [...new Set(base.map((p) => p.brand))].sort();
 
   return brands.map((brand) => ({
@@ -96,10 +106,11 @@ export function getBrandFilterCounts(
 function getBaseForFacet(
   products: Product[],
   filters: ShopFilters,
+  categories: ShopCategory[],
   facet: "categories" | "brands",
   categorySlug?: string,
 ): Product[] {
-  const locked = categorySlug ? getCategoryBySlug(categorySlug) : undefined;
+  const locked = categorySlug ? getCategoryBySlug(categorySlug, categories) : undefined;
   let result = [...products];
 
   if (locked) {
@@ -142,4 +153,3 @@ export function searchProducts(products: Product[], query: string): Product[] {
     return haystack.includes(q) || q.split(/\s+/).every((word) => haystack.includes(word));
   });
 }
-

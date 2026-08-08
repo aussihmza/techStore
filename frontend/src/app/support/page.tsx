@@ -16,7 +16,7 @@ export default function SupportPage() {
   const [lookupError, setLookupError] = useState("");
   const [tracked, setTracked] = useState<PlacedOrder | null>(null);
 
-  const handleTrack = (e: FormEvent) => {
+  const handleTrack = async (e: FormEvent) => {
     e.preventDefault();
     const q = orderQuery.trim();
     if (!q) {
@@ -32,7 +32,7 @@ export default function SupportPage() {
       return;
     }
 
-    const match = findOrder(q);
+    const match = await findOrder(q);
     if (match) {
       setTracked(match);
       setLookupError("");
