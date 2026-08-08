@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import LoginRequiredModal from "@/components/auth/LoginRequiredModal";
+import StripeReturnHandler from "@/components/checkout/StripeReturnHandler";
 
 export default function Layout() {
   return (
@@ -12,6 +13,7 @@ export default function Layout() {
       </main>
       <Footer />
       <LoginRequiredModal />
+      <StripeReturnHandler />
     </div>
   );
 }

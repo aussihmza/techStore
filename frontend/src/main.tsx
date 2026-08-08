@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+import { lazy, StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "@/app/globals.css";
@@ -12,7 +12,6 @@ import AboutPage from "@/app/about/page";
 import ContactPage from "@/app/contact/page";
 import WishlistPage from "@/app/wishlist/page";
 import CartPage from "@/app/cart/page";
-import CheckoutPage from "@/app/checkout/page";
 import OrderSuccessPage from "@/app/order-success/page";
 import ProductDetailPage from "@/app/product/page";
 import LegalPage from "@/app/legal/page";
@@ -20,6 +19,8 @@ import SupportPage from "@/app/support/page";
 import LoginPage from "@/app/login/page";
 import SignupPage from "@/app/signup/page";
 import RequireAuth from "@/components/auth/RequireAuth";
+
+const CheckoutPage = lazy(() => import("@/app/checkout/page"));
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -60,7 +61,15 @@ createRoot(document.getElementById("root")!).render(
               path="/checkout"
               element={
                 <RequireAuth>
-                  <CheckoutPage />
+                  <Suspense
+                    fallback={
+                      <p className="py-16 text-center text-slate-500">
+                        Loading checkout...
+                      </p>
+                    }
+                  >
+                    <CheckoutPage />
+                  </Suspense>
                 </RequireAuth>
               }
             />

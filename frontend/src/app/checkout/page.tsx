@@ -1,8 +1,13 @@
 import { useMemo, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useStore } from "@/context/StoreContext";
 import { calcCartTotals } from "@/lib/cart";
+import { createCheckoutSessionApi } from "@/lib/api/payments";
+import { ApiError } from "@/lib/api/client";
+import type { ShippingInfo } from "@/types/order";
+import type { PaymentMethodOption } from "@/lib/api/orders";
 import CheckoutOrderSummary from "@/components/checkout/CheckoutOrderSummary";
+import OrderPlacedModal from "@/components/checkout/OrderPlacedModal";
 import {
   FormField,
   PaymentOption,
@@ -11,48 +16,73 @@ import {
   TextInput,
 } from "@/components/checkout/CheckoutForms";
 
-type PaymentMethod = "card" | "paypal" | "apple";
+function readShipping(form: HTMLFormElement): ShippingInfo {
+  const data = new FormData(form);
+  return {
+    firstName: String(data.get("firstName") ?? ""),
+    lastName: String(data.get("lastName") ?? ""),
+    email: String(data.get("email") ?? ""),
+    address: String(data.get("address") ?? ""),
+    city: String(data.get("city") ?? ""),
+    state: String(data.get("state") ?? ""),
+    zip: String(data.get("zip") ?? ""),
+  };
+}
 
 export default function CheckoutPage() {
-  const navigate = useNavigate();
   const { cart, placeOrder } = useStore();
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("card");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodOption>("cod");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [placedOrderId, setPlacedOrderId] = useState("");
 
   const { subtotal, taxes, total } = useMemo(() => {
     const sub = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
     return calcCartTotals(sub);
   }, [cart]);
 
-  if (cart.length === 0) {
+  if (cart.length === 0 && !successOpen) {
     return <Navigate to="/cart" replace />;
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const data = new FormData(e.currentTarget);
-    setLoading(true);
     setError("");
+    setLoading(true);
 
-    const result = await placeOrder({
-      firstName: String(data.get("firstName") ?? ""),
-      lastName: String(data.get("lastName") ?? ""),
-      email: String(data.get("email") ?? ""),
-      address: String(data.get("address") ?? ""),
-      city: String(data.get("city") ?? ""),
-      state: String(data.get("state") ?? ""),
-      zip: String(data.get("zip") ?? ""),
-    });
+    const shipping = readShipping(e.currentTarget);
 
-    setLoading(false);
+    try {
+      if (paymentMethod === "card") {
+        const session = await createCheckoutSessionApi(shipping);
+        if (!session.url) {
+          throw new Error("Stripe checkout URL missing");
+        }
+        window.location.href = session.url;
+        return;
+      }
 
-    if (!result.ok) {
-      setError(result.error);
-      return;
+      const result = await placeOrder(shipping, "cod");
+      if (!result.ok) {
+        setError(result.error);
+        setLoading(false);
+        return;
+      }
+
+      setPlacedOrderId(result.order.id);
+      setSuccessOpen(true);
+      setLoading(false);
+    } catch (err) {
+      setLoading(false);
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : err instanceof Error
+            ? err.message
+            : "Checkout failed.",
+      );
     }
-
-    navigate("/order-success");
   };
 
   return (
@@ -70,6 +100,12 @@ export default function CheckoutPage() {
       </nav>
 
       <h1 className="mb-8 mt-2 text-3xl font-bold text-ink sm:text-4xl">Checkout</h1>
+
+      {error && (
+        <p className="mb-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">
+          {error}
+        </p>
+      )}
 
       <form onSubmit={handleSubmit} className="grid gap-8 pb-16 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
@@ -98,6 +134,7 @@ export default function CheckoutPage() {
                   <option value="CA">California</option>
                   <option value="NY">New York</option>
                   <option value="TX">Texas</option>
+                  <option value="PB">Punjab</option>
                 </SelectInput>
               </FormField>
               <FormField label="ZIP Code">
@@ -107,70 +144,46 @@ export default function CheckoutPage() {
           </StepSection>
 
           <StepSection step={2} title="Payment Method">
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <PaymentOption
-                label="Credit Card"
+                label="Cash on Delivery"
+                selected={paymentMethod === "cod"}
+                onSelect={() => setPaymentMethod("cod")}
+              />
+              <PaymentOption
+                label="Payment by Card"
                 selected={paymentMethod === "card"}
                 onSelect={() => setPaymentMethod("card")}
               />
-              <PaymentOption
-                label="PayPal"
-                selected={paymentMethod === "paypal"}
-                onSelect={() => setPaymentMethod("paypal")}
-              />
-              <PaymentOption
-                label="Apple Pay"
-                selected={paymentMethod === "apple"}
-                onSelect={() => setPaymentMethod("apple")}
-              />
             </div>
-
-            {paymentMethod === "card" && (
-              <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                <FormField label="Cardholder Name" className="sm:col-span-2">
-                  <TextInput required placeholder="John Doe" />
-                </FormField>
-                <FormField label="Card Number" className="sm:col-span-2">
-                  <TextInput required placeholder="1234 5678 9012 3456" />
-                </FormField>
-                <FormField label="Expiration Date">
-                  <TextInput required placeholder="MM/YY" />
-                </FormField>
-                <FormField label="CVV">
-                  <TextInput required placeholder="123" />
-                </FormField>
-              </div>
-            )}
-
-            {paymentMethod === "paypal" && (
-              <p className="mt-6 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
-                You will be redirected to PayPal to complete your purchase securely.
-              </p>
-            )}
-
-            {paymentMethod === "apple" && (
-              <p className="mt-6 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
-                Confirm payment with Apple Pay on your device.
-              </p>
-            )}
+            <p className="mt-4 text-sm text-slate-500">
+              {paymentMethod === "cod"
+                ? "Pay in cash when your order is delivered."
+                : "You will be redirected to Stripe’s secure checkout page to pay by card."}
+            </p>
           </StepSection>
         </div>
 
-        <div className="space-y-4 lg:col-span-1">
-          {error && (
-            <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">
-              {error}
-            </p>
-          )}
+        <div className="lg:col-span-1">
           <CheckoutOrderSummary
             items={cart}
             subtotal={subtotal}
             taxes={taxes}
             total={total}
             submitting={loading}
+            submitLabel={
+              paymentMethod === "card" ? "Pay with Card" : "Place Order"
+            }
+            loadingLabel={
+              paymentMethod === "card"
+                ? "Redirecting to Stripe..."
+                : "Placing order..."
+            }
           />
         </div>
       </form>
+
+      <OrderPlacedModal open={successOpen} orderId={placedOrderId} />
     </div>
   );
 }

@@ -9,6 +9,8 @@ interface CheckoutOrderSummaryProps {
   taxes: number;
   total: number;
   submitting?: boolean;
+  submitLabel?: string;
+  loadingLabel?: string;
 }
 
 export default function CheckoutOrderSummary({
@@ -17,6 +19,8 @@ export default function CheckoutOrderSummary({
   taxes,
   total,
   submitting = false,
+  submitLabel = "Place Order",
+  loadingLabel = "Placing order...",
 }: CheckoutOrderSummaryProps) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 lg:sticky lg:top-24">
@@ -65,7 +69,11 @@ export default function CheckoutOrderSummary({
         <span className="text-3xl font-extrabold text-brand">{formatPrice(total)}</span>
       </div>
 
-      <PlaceOrderButton disabled={submitting} />
+      <PlaceOrderButton
+        disabled={submitting}
+        label={submitLabel}
+        loadingLabel={loadingLabel}
+      />
 
       <p className="mt-4 text-center text-xs text-slate-400">
         By placing your order, you agree to our Terms of Service and Privacy Policy.

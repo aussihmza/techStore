@@ -70,6 +70,9 @@ export function toOrderResponse(order) {
     deliveryFrom: doc.deliveryFrom,
     deliveryTo: doc.deliveryTo,
     placedAt: doc.placedAt,
+    paymentStatus: doc.paymentStatus,
+    paymentMethod: doc.paymentMethod,
+    stripeSessionId: doc.stripeSessionId,
   };
 }
 

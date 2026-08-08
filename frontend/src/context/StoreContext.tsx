@@ -10,7 +10,7 @@ import {
 import type { Product } from "@/types/product";
 import type { CartLine, PlacedOrder, ShippingInfo } from "@/types/order";
 import { ApiError } from "@/lib/api/client";
-import { loginApi, logoutApi, meApi, registerApi } from "@/lib/api/auth";
+import { loginApi, logoutApi, registerApi } from "@/lib/api/auth";
 import {
   addCartItemApi,
   clearCartApi,
@@ -18,12 +18,14 @@ import {
   removeCartItemApi,
   updateCartItemApi,
 } from "@/lib/api/cart";
+import { removeWishlistItemApi, toggleWishlistApi } from "@/lib/api/wishlist";
 import {
-  getWishlistApi,
-  removeWishlistItemApi,
-  toggleWishlistApi,
-} from "@/lib/api/wishlist";
-import { getOrderByIdApi, getOrdersApi, placeOrderApi } from "@/lib/api/orders";
+  getOrderByIdApi,
+  placeOrderApi,
+  type PaymentMethodOption,
+} from "@/lib/api/orders";
+import { completeCheckoutSessionApi } from "@/lib/api/payments";
+import { bootstrapSession, resetSessionBootstrap } from "@/lib/api/session";
 import { clearLegacyStorage, getToken, setToken } from "@/lib/api/token";
 
 export type { CartLine };
@@ -66,7 +68,11 @@ interface StoreContextValue {
   updateQty: (id: string, qty: number) => Promise<void>;
   removeFromCart: (id: string) => Promise<void>;
   clearCart: () => Promise<void>;
-  placeOrder: (shipping: ShippingInfo) => Promise<OrderResult>;
+  placeOrder: (
+    shipping: ShippingInfo,
+    paymentMethod?: PaymentMethodOption,
+  ) => Promise<OrderResult>;
+  completeCardCheckout: (sessionId: string) => Promise<OrderResult>;
   findOrder: (orderId: string) => Promise<PlacedOrder | null>;
 }
 
@@ -95,43 +101,55 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setLastOrder(null);
   }, []);
 
-  const loadUserCollections = useCallback(async () => {
-    const [cartData, wishlistData, ordersData] = await Promise.all([
-      getCartApi(),
-      getWishlistApi(),
-      getOrdersApi(),
-    ]);
-    setCart(cartData.items);
-    setWishlist(wishlistData.products);
-    setOrders(ordersData.orders);
-    setLastOrder(ordersData.orders[0] ?? null);
-  }, []);
+  const applySession = useCallback(
+    (snapshot: {
+      user: { name: string; email: string };
+      cart: { items: CartLine[] };
+      wishlist: { products: Product[] };
+      orders: { orders: PlacedOrder[] };
+    }) => {
+      setUser({ name: snapshot.user.name, email: snapshot.user.email });
+      setCart(snapshot.cart.items);
+      setWishlist(snapshot.wishlist.products);
+      setOrders(snapshot.orders.orders);
+      setLastOrder(snapshot.orders.orders[0] ?? null);
+    },
+    [],
+  );
 
-  // Restore JWT session from API (no users localStorage)
+  // Restore JWT session once (deduped across StrictMode remounts)
   useEffect(() => {
     clearLegacyStorage();
+    let active = true;
 
     async function hydrate() {
-      const token = getToken();
-      if (!token) {
-        setAuthReady(true);
+      if (!getToken()) {
+        if (active) setAuthReady(true);
         return;
       }
 
       try {
-        const me = await meApi();
-        setUser({ name: me.name, email: me.email });
-        await loadUserCollections();
+        const snapshot = await bootstrapSession();
+        if (!active) return;
+        if (!snapshot) {
+          resetStore();
+          return;
+        }
+        applySession(snapshot);
       } catch {
         setToken(null);
-        resetStore();
+        resetSessionBootstrap();
+        if (active) resetStore();
       } finally {
-        setAuthReady(true);
+        if (active) setAuthReady(true);
       }
     }
 
     void hydrate();
-  }, [loadUserCollections, resetStore]);
+    return () => {
+      active = false;
+    };
+  }, [applySession, resetStore]);
 
   const openLoginPrompt = useCallback(() => setLoginPromptOpen(true), []);
   const closeLoginPrompt = useCallback(() => setLoginPromptOpen(false), []);
@@ -145,9 +163,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const signup = useCallback(
     async (input: { name: string; email: string; password: string }) => {
       try {
-        const me = await registerApi(input);
-        setUser({ name: me.name, email: me.email });
-        await loadUserCollections();
+        await registerApi(input);
+        resetSessionBootstrap();
+        const snapshot = await bootstrapSession();
+        if (!snapshot) {
+          return { ok: false as const, error: "Could not load account data." };
+        }
+        applySession(snapshot);
         setLoginPromptOpen(false);
         return { ok: true as const };
       } catch (error) {
@@ -157,15 +179,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         };
       }
     },
-    [loadUserCollections],
+    [applySession],
   );
 
   const login = useCallback(
     async (email: string, password: string) => {
       try {
-        const me = await loginApi(email, password);
-        setUser({ name: me.name, email: me.email });
-        await loadUserCollections();
+        await loginApi(email, password);
+        resetSessionBootstrap();
+        const snapshot = await bootstrapSession();
+        if (!snapshot) {
+          return { ok: false as const, error: "Could not load account data." };
+        }
+        applySession(snapshot);
         setLoginPromptOpen(false);
         return { ok: true as const };
       } catch (error) {
@@ -175,7 +201,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         };
       }
     },
-    [loadUserCollections],
+    [applySession],
   );
 
   const logout = useCallback(async () => {
@@ -183,6 +209,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       await logoutApi();
     } catch {
       setToken(null);
+      resetSessionBootstrap();
     }
     resetStore();
   }, [resetStore]);
@@ -278,14 +305,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const placeOrder = useCallback(
-    async (shipping: ShippingInfo): Promise<OrderResult> => {
+    async (
+      shipping: ShippingInfo,
+      paymentMethod: PaymentMethodOption = "cod",
+    ): Promise<OrderResult> => {
       if (!user) {
         setLoginPromptOpen(true);
         return { ok: false, error: "Please log in first." };
       }
 
       try {
-        const data = await placeOrderApi(shipping);
+        const data = await placeOrderApi(shipping, paymentMethod);
         setOrders((prev) => [data.order, ...prev]);
         setLastOrder(data.order);
         setCart([]);
@@ -294,6 +324,32 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return {
           ok: false,
           error: toErrorMessage(error, "Could not place order."),
+        };
+      }
+    },
+    [user],
+  );
+
+  const completeCardCheckout = useCallback(
+    async (sessionId: string): Promise<OrderResult> => {
+      if (!user) {
+        return { ok: false, error: "Please log in first." };
+      }
+
+      try {
+        const data = await completeCheckoutSessionApi(sessionId);
+        setOrders((prev) => {
+          if (prev.some((o) => o.id === data.order.id)) return prev;
+          return [data.order, ...prev];
+        });
+        setLastOrder(data.order);
+        getCartApi.invalidateAll();
+        setCart([]);
+        return { ok: true, order: data.order };
+      } catch (error) {
+        return {
+          ok: false,
+          error: toErrorMessage(error, "Could not complete payment."),
         };
       }
     },
@@ -346,6 +402,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       removeFromCart,
       clearCart,
       placeOrder,
+      completeCardCheckout,
       findOrder,
     };
   }, [
@@ -369,6 +426,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     removeFromCart,
     clearCart,
     placeOrder,
+    completeCardCheckout,
     findOrder,
   ]);
 

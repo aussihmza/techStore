@@ -211,6 +211,7 @@ const options = {
       { name: "Cart" },
       { name: "Wishlist" },
       { name: "Orders" },
+      { name: "Payments" },
       { name: "Contact" },
     ],
   },

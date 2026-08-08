@@ -68,14 +68,22 @@ export function PaymentOption({ label, selected, onSelect }: PaymentOptionProps)
   );
 }
 
-export function PlaceOrderButton({ disabled }: { disabled?: boolean }) {
+export function PlaceOrderButton({
+  disabled,
+  label = "Place Order",
+  loadingLabel = "Placing order...",
+}: {
+  disabled?: boolean;
+  label?: string;
+  loadingLabel?: string;
+}) {
   return (
     <button
       type="submit"
       disabled={disabled}
       className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-50"
     >
-      {disabled ? "Placing order..." : "Place Order"}
+      {disabled ? loadingLabel : label}
       <ArrowRightIcon className="h-5 w-5" />
     </button>
   );

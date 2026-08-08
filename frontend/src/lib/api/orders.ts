@@ -1,4 +1,6 @@
 import { apiRequest } from "@/lib/api/client";
+import { createCachedRequest } from "@/lib/api/cache";
+import { getCartApi } from "@/lib/api/cart";
 import type { PlacedOrder, ShippingInfo } from "@/types/order";
 
 export interface OrdersData {
@@ -6,19 +8,33 @@ export interface OrdersData {
   count: number;
 }
 
-export function getOrdersApi() {
-  return apiRequest<OrdersData>("/orders");
-}
+export type PaymentMethodOption = "cod" | "card";
 
-export function getOrderByIdApi(orderId: string) {
-  return apiRequest<{ order: PlacedOrder }>(
-    `/orders/${encodeURIComponent(orderId)}`,
-  );
-}
+export const getOrdersApi = createCachedRequest(
+  () => "/orders",
+  () => apiRequest<OrdersData>("/orders"),
+  10_000,
+);
 
-export function placeOrderApi(shipping: ShippingInfo) {
-  return apiRequest<{ order: PlacedOrder }>("/orders", {
+export const getOrderByIdApi = createCachedRequest(
+  (orderId: string) => `/orders/${orderId}`,
+  (orderId: string) =>
+    apiRequest<{ order: PlacedOrder }>(
+      `/orders/${encodeURIComponent(orderId)}`,
+    ),
+  10_000,
+);
+
+export async function placeOrderApi(
+  shipping: ShippingInfo,
+  paymentMethod: PaymentMethodOption = "cod",
+) {
+  const data = await apiRequest<{ order: PlacedOrder }>("/orders", {
     method: "POST",
-    body: JSON.stringify({ shipping }),
+    body: JSON.stringify({ shipping, paymentMethod }),
   });
+  getOrdersApi.invalidateAll();
+  getOrderByIdApi.invalidateAll();
+  getCartApi.invalidateAll();
+  return data;
 }

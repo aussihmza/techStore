@@ -34,7 +34,6 @@ const orderItemSchema = new mongoose.Schema(
 
 const orderSchema = new mongoose.Schema(
   {
-    // Frontend PlacedOrder.id (e.g. ORD-XXXX)
     orderId: {
       type: String,
       required: true,
@@ -60,6 +59,22 @@ const orderSchema = new mongoose.Schema(
     deliveryFrom: { type: String, required: true },
     deliveryTo: { type: String, required: true },
     placedAt: { type: Date, default: Date.now },
+    paymentMethod: {
+      type: String,
+      enum: ["cod", "card"],
+      required: true,
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid", "failed", "refunded"],
+      default: "pending",
+    },
+    stripeSessionId: {
+      type: String,
+      sparse: true,
+      unique: true,
+      trim: true,
+    },
   },
   { timestamps: true }
 );

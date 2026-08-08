@@ -214,7 +214,7 @@
  *                         count: { type: integer }
  *   post:
  *     tags: [Orders]
- *     summary: Place order from cart
+ *     summary: Place order from cart after Stripe payment
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -223,15 +223,46 @@
  *         application/json:
  *           schema:
  *             type: object
- *             required: [shipping]
+ *             required: [shipping, paymentIntentId]
  *             properties:
  *               shipping:
  *                 $ref: '#/components/schemas/Shipping'
+ *               paymentIntentId:
+ *                 type: string
+ *                 example: pi_3abc123
  *     responses:
  *       201:
  *         description: Order placed (cart cleared)
  *       400:
- *         description: Cart empty or invalid shipping
+ *         description: Cart empty, invalid shipping, or payment mismatch
+ *       402:
+ *         description: Payment not completed
+ */
+
+/**
+ * @openapi
+ * /payments/config:
+ *   get:
+ *     tags: [Payments]
+ *     summary: Get Stripe publishable key
+ *     responses:
+ *       200:
+ *         description: Publishable key
+ */
+
+/**
+ * @openapi
+ * /payments/create-intent:
+ *   post:
+ *     tags: [Payments]
+ *     summary: Create Stripe PaymentIntent for current cart
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: clientSecret returned
+ *       400:
+ *         description: Cart empty
  */
 
 /**
