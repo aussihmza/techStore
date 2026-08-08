@@ -2,6 +2,10 @@ import { useState, type FormEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import AuthShell, { AuthField, authInputClass } from "@/components/auth/AuthShell";
 import { useStore } from "@/context/StoreContext";
+import {
+  isStrongPassword,
+  PASSWORD_REQUIREMENTS_MESSAGE,
+} from "@/lib/password";
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -17,13 +21,19 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setError("");
+
+    if (!isStrongPassword(password)) {
+      setError(PASSWORD_REQUIREMENTS_MESSAGE);
+      return;
+    }
+
     if (password !== confirm) {
       setError("Passwords do not match.");
       return;
     }
 
     setLoading(true);
-    setError("");
     const result = await signup({
       name: name.trim(),
       email: email.trim(),
@@ -80,14 +90,18 @@ export default function SignupPage() {
             type="password"
             autoComplete="new-password"
             required
+            minLength={8}
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
               setError("");
             }}
-            placeholder="Create a password"
+            placeholder="e.g. Store@123"
             className={authInputClass}
           />
+          <p className="mt-1.5 text-xs text-slate-400">
+            Min 8 chars, with uppercase, lowercase, digit, and special character.
+          </p>
         </AuthField>
 
         <AuthField label="Confirm Password" htmlFor="signup-confirm">

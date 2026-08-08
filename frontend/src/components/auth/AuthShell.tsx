@@ -1,17 +1,21 @@
 import { Link } from "react-router-dom";
 import { AppleIcon, GoogleIcon } from "@/components/ui/icons";
 
+type AuthMode = "login" | "signup" | "forgot" | "reset";
+
 interface AuthShellProps {
-  mode: "login" | "signup";
+  mode: AuthMode;
   title: string;
   subtitle: string;
   children: React.ReactNode;
 }
 
 export default function AuthShell({ mode, title, subtitle, children }: AuthShellProps) {
+  const showTabs = mode === "login" || mode === "signup";
+  const showSocial = showTabs;
+
   return (
     <div className="relative flex min-h-[calc(100vh-5rem)] items-center justify-center overflow-hidden px-4 py-12 sm:px-6">
-      {/* Soft blue ambient blurs */}
       <div
         aria-hidden
         className="pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full bg-sky-200/50 blur-3xl"
@@ -26,33 +30,44 @@ export default function AuthShell({ mode, title, subtitle, children }: AuthShell
       />
 
       <div className="relative w-full max-w-md rounded-2xl border border-slate-100 bg-white p-8 shadow-xl shadow-slate-200/60 sm:p-10">
-        <div className="mb-8 flex gap-8 border-b border-slate-100">
-          <TabLink to="/login" active={mode === "login"}>
-            Login
-          </TabLink>
-          <TabLink to="/signup" active={mode === "signup"}>
-            Create Account
-          </TabLink>
-        </div>
+        {showTabs ? (
+          <div className="mb-8 flex gap-8 border-b border-slate-100">
+            <TabLink to="/login" active={mode === "login"}>
+              Login
+            </TabLink>
+            <TabLink to="/signup" active={mode === "signup"}>
+              Create Account
+            </TabLink>
+          </div>
+        ) : (
+          <Link
+            to="/login"
+            className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-brand"
+          >
+            <span aria-hidden>←</span> Back to login
+          </Link>
+        )}
 
         <h1 className="text-3xl font-extrabold tracking-tight text-ink">{title}</h1>
         <p className="mt-2 text-base text-slate-500">{subtitle}</p>
 
         <div className="mt-8">{children}</div>
 
-        <div className="mt-8">
-          <div className="relative flex items-center justify-center">
-            <span className="absolute inset-x-0 h-px bg-slate-200" />
-            <span className="relative bg-white px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-              Or continue with
-            </span>
-          </div>
+        {showSocial ? (
+          <div className="mt-8">
+            <div className="relative flex items-center justify-center">
+              <span className="absolute inset-x-0 h-px bg-slate-200" />
+              <span className="relative bg-white px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                Or continue with
+              </span>
+            </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-3">
-            <SocialButton label="Google" icon={<GoogleIcon className="h-5 w-5" />} />
-            <SocialButton label="Apple" icon={<AppleIcon className="h-5 w-5" />} />
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <SocialButton label="Google" icon={<GoogleIcon className="h-5 w-5" />} />
+              <SocialButton label="Apple" icon={<AppleIcon className="h-5 w-5" />} />
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </div>
   );

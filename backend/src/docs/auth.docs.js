@@ -32,7 +32,7 @@
  *             properties:
  *               name: { type: string, example: Hamza }
  *               email: { type: string, format: email, example: hamza@test.com }
- *               password: { type: string, minLength: 6, example: secret12 }
+ *               password: { type: string, minLength: 8, example: Store@123 }
  *     responses:
  *       201:
  *         description: Account created
@@ -83,6 +83,86 @@
  *                       $ref: '#/components/schemas/AuthPayload'
  *       401:
  *         description: Incorrect password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+
+/**
+ * @openapi
+ * /auth/forgot-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Send password reset OTP to email
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email: { type: string, format: email, example: hamza@test.com }
+ *     responses:
+ *       200:
+ *         description: OTP sent
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       404:
+ *         description: Account not found
+ */
+
+/**
+ * @openapi
+ * /auth/verify-reset-otp:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Verify password reset OTP
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, otp]
+ *             properties:
+ *               email: { type: string, format: email, example: hamza@test.com }
+ *               otp: { type: string, example: "123456" }
+ *     responses:
+ *       200:
+ *         description: OTP verified, returns resetToken
+ *       400:
+ *         description: Invalid or expired OTP
+ */
+
+/**
+ * @openapi
+ * /auth/reset-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Reset password after OTP verification
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [token, password]
+ *             properties:
+ *               token: { type: string, example: abc123resetToken }
+ *               password: { type: string, minLength: 8, example: Store@123 }
+ *     responses:
+ *       200:
+ *         description: Password updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Invalid or expired token
  *         content:
  *           application/json:
  *             schema:

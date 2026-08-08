@@ -18,6 +18,8 @@ import LegalPage from "@/app/legal/page";
 import SupportPage from "@/app/support/page";
 import LoginPage from "@/app/login/page";
 import SignupPage from "@/app/signup/page";
+import ForgotPasswordPage from "@/app/forgot-password/page";
+import ResetPasswordPage from "@/app/reset-password/page";
 import RequireAuth from "@/components/auth/RequireAuth";
 
 const CheckoutPage = lazy(() => import("@/app/checkout/page"));
@@ -41,6 +43,8 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/support" element={<SupportPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route
               path="/wishlist"
               element={

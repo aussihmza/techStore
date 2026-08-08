@@ -21,4 +21,19 @@ export const authController = {
     const data = authService.getMe(req.user);
     return ApiResponse(res, 200, data, "OK");
   }),
+
+  forgotPassword: asyncHandler(async (req, res) => {
+    const data = await authService.forgotPassword(req.body);
+    return ApiResponse(res, 200, data, data.message);
+  }),
+
+  verifyResetOtp: asyncHandler(async (req, res) => {
+    const data = await authService.verifyResetOtp(req.body);
+    return ApiResponse(res, 200, data, data.message);
+  }),
+
+  resetPassword: asyncHandler(async (req, res) => {
+    const data = await authService.resetPassword(req.body);
+    return ApiResponse(res, 200, data, data.message);
+  }),
 };

@@ -53,9 +53,9 @@ export default function LoginPage() {
           label="Password"
           htmlFor="login-password"
           action={
-            <button type="button" className="text-sm font-medium text-brand hover:underline">
+            <Link to="/forgot-password" className="text-sm font-medium text-brand hover:underline">
               Forgot Password?
-            </button>
+            </Link>
           }
         >
           <input

@@ -11,4 +11,9 @@ export const env = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
   stripeSecretKey: process.env.STRIPE_SECRET_KEY || "",
   stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || "",
+  smtpHost: process.env.SMTP_HOST || "",
+  smtpPort: Number(process.env.SMTP_PORT) || 587,
+  smtpUser: process.env.SMTP_USER || "",
+  smtpPass: process.env.SMTP_PASS || "",
+  smtpFrom: process.env.SMTP_FROM || "",
 };

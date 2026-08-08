@@ -46,6 +46,35 @@ export async function logoutApi(): Promise<void> {
   }
 }
 
+export interface ForgotPasswordResult {
+  message: string;
+  emailSent?: boolean;
+}
+
+export function forgotPasswordApi(email: string) {
+  return apiRequest<ForgotPasswordResult>("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export function verifyResetOtpApi(email: string, otp: string) {
+  return apiRequest<{ message: string; resetToken: string }>(
+    "/auth/verify-reset-otp",
+    {
+      method: "POST",
+      body: JSON.stringify({ email, otp }),
+    },
+  );
+}
+
+export function resetPasswordApi(token: string, password: string) {
+  return apiRequest<{ message: string }>("/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ token, password }),
+  });
+}
+
 export const meApi = createCachedRequest(
   () => "/auth/me",
   async () => {
