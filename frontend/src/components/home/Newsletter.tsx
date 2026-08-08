@@ -1,14 +1,39 @@
 import { useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import SuccessModal from "@/components/ui/SuccessModal";
+import { ApiError } from "@/lib/api/client";
+import { subscribeNewsletterApi } from "@/lib/api/newsletter";
 
 export default function Newsletter() {
   const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(
+    "Thanks for joining. You'll get product drops and tech updates in your inbox.",
+  );
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setSuccessOpen(true);
-    setEmail("");
+    setError("");
+    setLoading(true);
+
+    try {
+      const data = await subscribeNewsletterApi(email.trim());
+      setSuccessMessage(
+        data.alreadySubscribed
+          ? "This email is already on our list. You're all set."
+          : "Thanks for joining. You'll get product drops and tech updates in your inbox.",
+      );
+      setSuccessOpen(true);
+      setEmail("");
+    } catch (err) {
+      setError(
+        err instanceof ApiError ? err.message : "Could not subscribe. Please try again.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -29,26 +54,45 @@ export default function Newsletter() {
 
           <form
             className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row"
-            onSubmit={handleSubmit}
+            onSubmit={(e) => void handleSubmit(e)}
           >
             <input
               type="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError("");
+              }}
               placeholder="Enter your email address"
-              className="flex-1 rounded-xl border border-white/25 bg-white/95 px-4 py-3.5 text-sm text-ink shadow-sm outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-white/50"
+              disabled={loading}
+              className="flex-1 rounded-xl border border-white/25 bg-white/95 px-4 py-3.5 text-sm text-ink shadow-sm outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-white/50 disabled:opacity-70"
             />
             <button
               type="submit"
-              className="rounded-xl bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-slate-800"
+              disabled={loading}
+              className="rounded-xl bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-slate-800 disabled:opacity-60"
             >
-              Subscribe Now
+              {loading ? "Subscribing..." : "Subscribe Now"}
             </button>
           </form>
 
+          {error ? (
+            <p className="mx-auto mt-3 max-w-md rounded-xl border border-rose-200/40 bg-rose-500/15 px-3 py-2 text-sm text-rose-50">
+              {error}
+            </p>
+          ) : null}
+
           <p className="mt-4 text-xs text-blue-100/80">
-            By subscribing, you agree to our Privacy Policy and Terms of Service.
+            By subscribing, you agree to our{" "}
+            <Link to="/legal#privacy-policy" className="underline hover:text-white">
+              Privacy Policy
+            </Link>{" "}
+            and{" "}
+            <Link to="/legal#terms-of-service" className="underline hover:text-white">
+              Terms of Service
+            </Link>
+            .
           </p>
         </div>
       </div>
@@ -56,7 +100,7 @@ export default function Newsletter() {
       <SuccessModal
         open={successOpen}
         title="Subscribed successfully"
-        message="Thanks for joining. You'll get product drops and tech updates in your inbox."
+        message={successMessage}
         onClose={() => setSuccessOpen(false)}
       />
     </section>
