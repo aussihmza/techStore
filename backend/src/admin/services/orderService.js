@@ -1,4 +1,5 @@
 import { Order } from "../../models/Order.js";
+import { ReturnRequest } from "../../models/ReturnRequest.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { toOrderResponse } from "../../utils/storeHelpers.js";
 
@@ -69,5 +70,24 @@ export const adminOrderService = {
 
     await order.save();
     return { order: toOrderResponse(order) };
+  },
+
+  async remove(orderId) {
+    const bare = normalizeOrderId(orderId);
+    const order = await Order.findOne({
+      orderId: { $in: [`#${bare}`, bare] },
+    });
+    if (!order) {
+      throw new ApiError(404, "Order not found");
+    }
+
+    const storedId = order.orderId;
+    await order.deleteOne();
+    // Clean related RMA rows so they don't orphan against a missing order
+    await ReturnRequest.deleteMany({
+      orderId: { $in: [storedId, bare, `#${bare}`] },
+    });
+
+    return null;
   },
 };

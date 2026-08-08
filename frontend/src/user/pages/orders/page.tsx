@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useStore } from "@/context/StoreContext";
 import { formatPrice } from "@/user/lib/cart";
@@ -7,7 +8,23 @@ import ProductImage from "@/user/components/ui/ProductImage";
 import { CartIcon } from "@/user/components/ui/icons";
 
 export default function OrdersPage() {
-  const { orders } = useStore();
+  const { orders, refreshOrders } = useStore();
+
+  useEffect(() => {
+    void refreshOrders();
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        void refreshOrders();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
+  }, [refreshOrders]);
 
   return (
     <div className="page-shell">

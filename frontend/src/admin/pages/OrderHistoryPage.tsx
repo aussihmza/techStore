@@ -6,19 +6,16 @@ import {
   updateAdminOrderApi,
   type AdminOrder,
 } from "@/admin/api/admin";
-import OrdersTable, { FULFILLMENT, PAYMENT } from "@/admin/components/OrdersTable";
+import OrdersTable, { PAYMENT } from "@/admin/components/OrdersTable";
 import { useStore } from "@/context/StoreContext";
 import { ApiError } from "@/lib/api/client";
 
-const ACTIVE_FULFILLMENT = FULFILLMENT.filter((s) => s !== "delivered");
-
-export default function AdminOrdersPage() {
+export default function AdminOrderHistoryPage() {
   const { removeLocalOrder, refreshOrders } = useStore();
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [paymentFilter, setPaymentFilter] = useState("all");
-  const [fulfillmentFilter, setFulfillmentFilter] = useState("all");
 
   const load = async () => {
     const data = await getAdminOrdersApi();
@@ -43,22 +40,17 @@ export default function AdminOrdersPage() {
     };
   }, []);
 
-  const activeOrders = useMemo(
-    () => orders.filter((order) => order.status !== "delivered"),
+  const delivered = useMemo(
+    () => orders.filter((order) => order.status === "delivered"),
     [orders],
   );
 
   const filtered = useMemo(() => {
-    return activeOrders.filter((order) => {
-      const payment = order.paymentStatus || "pending";
-      const fulfillment = order.status || "processing";
-      if (paymentFilter !== "all" && payment !== paymentFilter) return false;
-      if (fulfillmentFilter !== "all" && fulfillment !== fulfillmentFilter) {
-        return false;
-      }
-      return true;
-    });
-  }, [activeOrders, paymentFilter, fulfillmentFilter]);
+    if (paymentFilter === "all") return delivered;
+    return delivered.filter(
+      (order) => (order.paymentStatus || "pending") === paymentFilter,
+    );
+  }, [delivered, paymentFilter]);
 
   const patch = async (
     orderId: string,
@@ -85,24 +77,22 @@ export default function AdminOrdersPage() {
     }
   };
 
-  if (loading) return <p className="text-slate-500">Loading orders...</p>;
+  if (loading) return <p className="text-slate-500">Loading order history...</p>;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="font-display text-2xl font-extrabold">Orders</h2>
+          <h2 className="font-display text-2xl font-extrabold">Order History</h2>
           <p className="mt-1 text-slate-500">
-            Active orders only. Delivered orders move to{" "}
-            <Link to="/admin/order-history" className="font-semibold text-brand hover:underline">
-              Order History
+            Delivered orders. Active ones stay on{" "}
+            <Link to="/admin/orders" className="font-semibold text-brand hover:underline">
+              Orders
             </Link>
             .
           </p>
         </div>
-        <p className="text-sm text-slate-400">
-          {filtered.length} of {activeOrders.length} active
-        </p>
+        <p className="text-sm text-slate-400">{filtered.length} delivered</p>
       </div>
 
       {error ? (
@@ -127,38 +117,11 @@ export default function AdminOrdersPage() {
             ))}
           </select>
         </label>
-        <label className="text-sm">
-          <span className="mb-1 block font-medium text-slate-600">Fulfillment</span>
-          <select
-            value={fulfillmentFilter}
-            onChange={(e) => setFulfillmentFilter(e.target.value)}
-            className="rounded-lg border border-slate-200 px-3 py-2"
-          >
-            <option value="all">All</option>
-            {ACTIVE_FULFILLMENT.map((status) => (
-              <option key={status} value={status}>
-                {status.replaceAll("_", " ")}
-              </option>
-            ))}
-          </select>
-        </label>
-        {(paymentFilter !== "all" || fulfillmentFilter !== "all") && (
-          <button
-            type="button"
-            onClick={() => {
-              setPaymentFilter("all");
-              setFulfillmentFilter("all");
-            }}
-            className="self-end text-sm font-semibold text-brand hover:underline"
-          >
-            Clear filters
-          </button>
-        )}
       </div>
 
       <OrdersTable
         orders={filtered}
-        emptyMessage="No active orders match these filters."
+        emptyMessage="No delivered orders yet."
         onPatch={patch}
         onDelete={remove}
       />

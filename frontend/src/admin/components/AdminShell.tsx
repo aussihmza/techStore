@@ -5,7 +5,8 @@ import { useStore } from "@/context/StoreContext";
 const links = [
   { to: "/admin", label: "Dashboard", end: true, hint: "Overview" },
   { to: "/admin/products", label: "Products", hint: "Catalog" },
-  { to: "/admin/orders", label: "Orders", hint: "Fulfillment" },
+  { to: "/admin/orders", label: "Orders", hint: "Active" },
+  { to: "/admin/order-history", label: "Order History", hint: "Delivered" },
   { to: "/admin/reviews", label: "Reviews", hint: "Moderation" },
   { to: "/admin/returns", label: "Returns", hint: "RMA" },
 ];

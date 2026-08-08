@@ -5,6 +5,8 @@ import {
   getAdminProductsApi,
   updateAdminProductApi,
 } from "@/admin/api/admin";
+import AdminSuccessModal from "@/admin/components/AdminSuccessModal";
+import ConfirmModal from "@/admin/components/ConfirmModal";
 import type { ApiProduct } from "@/user/api/products";
 import { ApiError } from "@/lib/api/client";
 import {
@@ -45,6 +47,11 @@ export default function AdminProductsPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [success, setSuccess] = useState<{ title: string; message: string } | null>(
+    null,
+  );
 
   const load = async () => {
     const data = await getAdminProductsApi();
@@ -112,8 +119,16 @@ export default function AdminProductsPage() {
     try {
       if (editingId) {
         await updateAdminProductApi(editingId, body);
+        setSuccess({
+          title: "Successfully updated",
+          message: `${body.name} has been saved.`,
+        });
       } else {
         await createAdminProductApi(body);
+        setSuccess({
+          title: "Successfully created",
+          message: `${body.name} has been added to the catalog.`,
+        });
       }
       await load();
       resetForm();
@@ -124,14 +139,22 @@ export default function AdminProductsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Delete this product?")) return;
+  const handleConfirmDelete = async () => {
+    if (!pendingDeleteId) return;
+    setDeleting(true);
     try {
-      await deleteAdminProductApi(id);
+      await deleteAdminProductApi(pendingDeleteId);
       await load();
-      if (editingId === id) resetForm();
+      if (editingId === pendingDeleteId) resetForm();
+      setPendingDeleteId(null);
+      setSuccess({
+        title: "Successfully deleted",
+        message: "The product has been removed from the catalog.",
+      });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Delete failed.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -266,7 +289,7 @@ export default function AdminProductsPage() {
                     <button
                       type="button"
                       className="text-sm font-semibold text-rose-600"
-                      onClick={() => void handleDelete(product.id)}
+                      onClick={() => setPendingDeleteId(product.id)}
                     >
                       Delete
                     </button>
@@ -277,6 +300,25 @@ export default function AdminProductsPage() {
           </tbody>
         </table>
       </div>
+
+      <ConfirmModal
+        open={Boolean(pendingDeleteId)}
+        title="Delete this product?"
+        message="This product will be removed from the shop catalog. This cannot be undone."
+        confirmLabel="Delete product"
+        busy={deleting}
+        onCancel={() => {
+          if (!deleting) setPendingDeleteId(null);
+        }}
+        onConfirm={() => void handleConfirmDelete()}
+      />
+
+      <AdminSuccessModal
+        open={Boolean(success)}
+        title={success?.title || ""}
+        message={success?.message}
+        onClose={() => setSuccess(null)}
+      />
     </div>
   );
 }

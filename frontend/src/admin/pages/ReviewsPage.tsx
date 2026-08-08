@@ -4,12 +4,19 @@ import {
   getAdminReviewsApi,
   type AdminReview,
 } from "@/admin/api/admin";
+import AdminSuccessModal from "@/admin/components/AdminSuccessModal";
+import ConfirmModal from "@/admin/components/ConfirmModal";
 import { ApiError } from "@/lib/api/client";
 
 export default function AdminReviewsPage() {
   const [reviews, setReviews] = useState<AdminReview[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [success, setSuccess] = useState<{ title: string; message: string } | null>(
+    null,
+  );
 
   const load = async () => {
     const data = await getAdminReviewsApi();
@@ -34,13 +41,21 @@ export default function AdminReviewsPage() {
     };
   }, []);
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Delete this review?")) return;
+  const handleConfirmDelete = async () => {
+    if (!pendingDeleteId) return;
+    setDeleting(true);
     try {
-      await deleteAdminReviewApi(id);
+      await deleteAdminReviewApi(pendingDeleteId);
       await load();
+      setPendingDeleteId(null);
+      setSuccess({
+        title: "Successfully deleted",
+        message: "The review has been removed.",
+      });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Delete failed.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -81,7 +96,7 @@ export default function AdminReviewsPage() {
                 <button
                   type="button"
                   className="text-sm font-semibold text-rose-600"
-                  onClick={() => void handleDelete(review.id)}
+                  onClick={() => setPendingDeleteId(review.id)}
                 >
                   Delete
                 </button>
@@ -91,6 +106,25 @@ export default function AdminReviewsPage() {
           ))
         )}
       </div>
+
+      <ConfirmModal
+        open={Boolean(pendingDeleteId)}
+        title="Delete this review?"
+        message="This review will be permanently removed and product rating will update."
+        confirmLabel="Delete review"
+        busy={deleting}
+        onCancel={() => {
+          if (!deleting) setPendingDeleteId(null);
+        }}
+        onConfirm={() => void handleConfirmDelete()}
+      />
+
+      <AdminSuccessModal
+        open={Boolean(success)}
+        title={success?.title || ""}
+        message={success?.message}
+        onClose={() => setSuccess(null)}
+      />
     </div>
   );
 }

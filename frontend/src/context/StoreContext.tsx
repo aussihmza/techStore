@@ -26,6 +26,7 @@ import {
 import { removeWishlistItemApi, toggleWishlistApi } from "@/user/api/wishlist";
 import {
   getOrderByIdApi,
+  getOrdersApi,
   placeOrderApi,
   type PaymentMethodOption,
 } from "@/user/api/orders";
@@ -93,6 +94,14 @@ interface StoreContextValue {
   ) => Promise<OrderResult>;
   completeCardCheckout: (sessionId: string) => Promise<OrderResult>;
   findOrder: (orderId: string) => Promise<PlacedOrder | null>;
+  /** Re-fetch orders from API (e.g. after admin changes). */
+  refreshOrders: () => Promise<void>;
+  /** Drop an order from local store immediately (e.g. after admin delete). */
+  removeLocalOrder: (orderId: string) => void;
+}
+
+function normalizeOrderKey(orderId: string) {
+  return orderId.trim().toUpperCase().replace(/^#/, "");
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
@@ -440,24 +449,48 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [user],
   );
 
+  const removeLocalOrder = useCallback((orderId: string) => {
+    const key = normalizeOrderKey(orderId);
+    getOrdersApi.invalidateAll();
+    getOrderByIdApi.invalidateAll();
+    setOrders((prev) => {
+      const next = prev.filter((o) => normalizeOrderKey(o.id) !== key);
+      setLastOrder(next[0] ?? null);
+      return next;
+    });
+  }, []);
+
+  const refreshOrders = useCallback(async () => {
+    if (!getToken()) return;
+    try {
+      getOrdersApi.invalidateAll();
+      const data = await getOrdersApi();
+      setOrders(data.orders);
+      setLastOrder(data.orders[0] ?? null);
+    } catch {
+      // keep existing list if refresh fails
+    }
+  }, []);
+
   const findOrder = useCallback(
     async (orderId: string) => {
       if (!user) return null;
-      const local = orders.find(
-        (o) =>
-          o.id.toUpperCase().replace(/^#/, "") ===
-          orderId.trim().toUpperCase().replace(/^#/, ""),
-      );
-      if (local) return local;
+      const key = normalizeOrderKey(orderId);
 
       try {
+        getOrderByIdApi.invalidate(orderId);
         const data = await getOrderByIdApi(orderId);
         return data.order;
       } catch {
+        setOrders((prev) => {
+          const next = prev.filter((o) => normalizeOrderKey(o.id) !== key);
+          setLastOrder(next[0] ?? null);
+          return next;
+        });
         return null;
       }
     },
-    [user, orders],
+    [user],
   );
 
   const value = useMemo<StoreContextValue>(() => {
@@ -490,6 +523,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       placeOrder,
       completeCardCheckout,
       findOrder,
+      refreshOrders,
+      removeLocalOrder,
     };
   }, [
     user,
@@ -516,6 +551,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     placeOrder,
     completeCardCheckout,
     findOrder,
+    refreshOrders,
+    removeLocalOrder,
   ]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

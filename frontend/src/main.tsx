@@ -29,6 +29,7 @@ import AdminShell from "@/admin/components/AdminShell";
 import AdminDashboardPage from "@/admin/pages/DashboardPage";
 import AdminProductsPage from "@/admin/pages/ProductsPage";
 import AdminOrdersPage from "@/admin/pages/OrdersPage";
+import AdminOrderHistoryPage from "@/admin/pages/OrderHistoryPage";
 import AdminReviewsPage from "@/admin/pages/ReviewsPage";
 import AdminReturnsPage from "@/admin/pages/ReturnsPage";
 
@@ -53,6 +54,7 @@ createRoot(document.getElementById("root")!).render(
             <Route index element={<AdminDashboardPage />} />
             <Route path="products" element={<AdminProductsPage />} />
             <Route path="orders" element={<AdminOrdersPage />} />
+            <Route path="order-history" element={<AdminOrderHistoryPage />} />
             <Route path="reviews" element={<AdminReviewsPage />} />
             <Route path="returns" element={<AdminReturnsPage />} />
           </Route>

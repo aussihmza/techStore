@@ -98,6 +98,13 @@ export function updateAdminOrderApi(
   );
 }
 
+export function deleteAdminOrderApi(orderId: string) {
+  const bareId = String(orderId).trim().replace(/^#/, "");
+  return apiRequest<null>(`/admin/orders/${encodeURIComponent(bareId)}`, {
+    method: "DELETE",
+  });
+}
+
 export function getAdminReviewsApi() {
   return apiRequest<{ reviews: AdminReview[]; count: number }>("/admin/reviews");
 }

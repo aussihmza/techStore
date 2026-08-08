@@ -12,4 +12,9 @@ export const adminOrderController = {
     const data = await adminOrderService.updateStatus(req.params.orderId, req.body);
     return ApiResponse(res, 200, data, "Order updated");
   }),
+
+  remove: asyncHandler(async (req, res) => {
+    await adminOrderService.remove(req.params.orderId);
+    return ApiResponse(res, 200, null, "Order deleted");
+  }),
 };

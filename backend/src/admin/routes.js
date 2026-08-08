@@ -20,6 +20,7 @@ router.delete("/products/:id", adminProductController.remove);
 
 router.get("/orders", adminOrderController.list);
 router.patch("/orders/:orderId", adminOrderController.updateStatus);
+router.delete("/orders/:orderId", adminOrderController.remove);
 
 router.get("/reviews", adminReviewController.list);
 router.delete("/reviews/:id", adminReviewController.remove);

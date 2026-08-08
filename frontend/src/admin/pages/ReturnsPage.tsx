@@ -4,6 +4,7 @@ import {
   updateAdminReturnApi,
   type AdminReturn,
 } from "@/admin/api/admin";
+import AdminSuccessModal from "@/admin/components/AdminSuccessModal";
 import { ApiError } from "@/lib/api/client";
 
 const STATUSES = ["pending", "approved", "rejected", "completed"] as const;
@@ -12,6 +13,9 @@ export default function AdminReturnsPage() {
   const [requests, setRequests] = useState<AdminReturn[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [success, setSuccess] = useState<{ title: string; message: string } | null>(
+    null,
+  );
 
   const load = async () => {
     const data = await getAdminReturnsApi();
@@ -36,10 +40,14 @@ export default function AdminReturnsPage() {
     };
   }, []);
 
-  const patch = async (id: string, status: string) => {
+  const patch = async (id: string, status: string, rmaId: string) => {
     try {
       await updateAdminReturnApi(id, status);
       await load();
+      setSuccess({
+        title: "Successfully updated",
+        message: `${rmaId} is now marked as ${status}.`,
+      });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Update failed.");
     }
@@ -80,7 +88,7 @@ export default function AdminReturnsPage() {
                 </div>
                 <select
                   value={item.status}
-                  onChange={(e) => void patch(item.id, e.target.value)}
+                  onChange={(e) => void patch(item.id, e.target.value, item.rmaId)}
                   className="rounded-lg border border-slate-200 px-2 py-1 text-sm"
                 >
                   {STATUSES.map((status) => (
@@ -96,6 +104,13 @@ export default function AdminReturnsPage() {
           ))
         )}
       </div>
+
+      <AdminSuccessModal
+        open={Boolean(success)}
+        title={success?.title || ""}
+        message={success?.message}
+        onClose={() => setSuccess(null)}
+      />
     </div>
   );
 }
