@@ -1,4 +1,16 @@
+import { useState, type FormEvent } from "react";
+import SuccessModal from "@/components/ui/SuccessModal";
+
 export default function Newsletter() {
+  const [email, setEmail] = useState("");
+  const [successOpen, setSuccessOpen] = useState(false);
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    setSuccessOpen(true);
+    setEmail("");
+  };
+
   return (
     <section className="pb-16">
       <div className="relative overflow-hidden rounded-3xl bg-brand px-6 py-14 text-center sm:px-12">
@@ -16,11 +28,13 @@ export default function Newsletter() {
 
           <form
             className="mx-auto mt-7 flex max-w-md flex-col gap-3 sm:flex-row"
-            onSubmit={(e) => e.preventDefault()}
+            onSubmit={handleSubmit}
           >
             <input
               type="email"
               required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email address"
               className="flex-1 rounded-xl border border-white/20 bg-white px-4 py-3 text-sm text-ink outline-none placeholder:text-slate-400"
             />
@@ -37,6 +51,13 @@ export default function Newsletter() {
           </p>
         </div>
       </div>
+
+      <SuccessModal
+        open={successOpen}
+        title="Subscribed successfully"
+        message="Thanks for joining. You'll get product drops and tech updates in your inbox."
+        onClose={() => setSuccessOpen(false)}
+      />
     </section>
   );
 }

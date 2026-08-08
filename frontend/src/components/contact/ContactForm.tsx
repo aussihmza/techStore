@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { ArrowRightIcon } from "@/components/ui/icons";
+import SuccessModal from "@/components/ui/SuccessModal";
 import { ApiError } from "@/lib/api/client";
 import { submitContactApi } from "@/lib/api/contact";
 
@@ -16,13 +17,12 @@ export default function ContactForm() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [successOpen, setSuccessOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
-    setSuccess("");
 
     if (!subject) {
       setError("Please select a topic.");
@@ -32,11 +32,11 @@ export default function ContactForm() {
     setLoading(true);
     try {
       await submitContactApi({ fullName, email, subject, message });
-      setSuccess("Message sent successfully. We'll get back to you soon.");
       setFullName("");
       setEmail("");
       setSubject("");
       setMessage("");
+      setSuccessOpen(true);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not send message.");
     } finally {
@@ -104,11 +104,6 @@ export default function ContactForm() {
             {error}
           </p>
         )}
-        {success && (
-          <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-            {success}
-          </p>
-        )}
 
         <button
           type="submit"
@@ -119,6 +114,13 @@ export default function ContactForm() {
           <ArrowRightIcon className="h-5 w-5" />
         </button>
       </form>
+
+      <SuccessModal
+        open={successOpen}
+        title="Message sent successfully"
+        message="Thanks for reaching out. We'll get back to you soon."
+        onClose={() => setSuccessOpen(false)}
+      />
     </div>
   );
 }
