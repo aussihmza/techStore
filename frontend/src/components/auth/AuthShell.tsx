@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { AppleIcon, GoogleIcon } from "@/components/ui/icons";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 
 type AuthMode = "login" | "signup" | "forgot" | "reset";
 
@@ -12,7 +12,7 @@ interface AuthShellProps {
 
 export default function AuthShell({ mode, title, subtitle, children }: AuthShellProps) {
   const showTabs = mode === "login" || mode === "signup";
-  const showSocial = showTabs;
+  const showGoogle = showTabs;
 
   return (
     <div className="relative flex min-h-[calc(100vh-5rem)] items-center justify-center overflow-hidden px-4 py-12 sm:px-6">
@@ -58,7 +58,7 @@ export default function AuthShell({ mode, title, subtitle, children }: AuthShell
 
         <div className="mt-8">{children}</div>
 
-        {showSocial ? (
+        {showGoogle ? (
           <div className="mt-8">
             <div className="relative flex items-center justify-center">
               <span className="absolute inset-x-0 h-px bg-slate-200" />
@@ -67,9 +67,8 @@ export default function AuthShell({ mode, title, subtitle, children }: AuthShell
               </span>
             </div>
 
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <SocialButton label="Google" icon={<GoogleIcon className="h-5 w-5" />} />
-              <SocialButton label="Apple" icon={<AppleIcon className="h-5 w-5" />} />
+            <div className="mt-5">
+              <GoogleSignInButton />
             </div>
           </div>
         ) : null}
@@ -99,18 +98,6 @@ function TabLink({
         <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-brand" />
       )}
     </Link>
-  );
-}
-
-function SocialButton({ label, icon }: { label: string; icon: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-ink transition-all hover:-translate-y-0.5 hover:border-brand/30 hover:bg-brand/5"
-    >
-      {icon}
-      {label}
-    </button>
   );
 }
 

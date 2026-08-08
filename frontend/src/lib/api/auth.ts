@@ -37,6 +37,16 @@ export async function loginApi(email: string, password: string): Promise<ApiUser
   return data.user;
 }
 
+export async function googleLoginApi(idToken: string): Promise<ApiUser> {
+  const data = await apiRequest<AuthData>("/auth/google", {
+    method: "POST",
+    body: JSON.stringify({ idToken }),
+  });
+  setToken(data.token);
+  meApi.invalidateAll();
+  return data.user;
+}
+
 export async function logoutApi(): Promise<void> {
   try {
     await apiRequest<null>("/auth/logout", { method: "POST" });

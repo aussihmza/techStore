@@ -17,6 +17,7 @@ import {
   hashResetToken,
   sendPasswordResetOtpEmail,
 } from "../utils/mail.js";
+import { verifyGoogleIdToken } from "../utils/googleAuth.js";
 
 async function createUserDefaults(userId) {
   await Promise.all([
@@ -85,9 +86,49 @@ export const authService = {
       throw new ApiError(404, "No account found with this email. Please sign up.");
     }
 
+    if (!user.password) {
+      throw new ApiError(
+        400,
+        "This account uses Google Sign-In. Please continue with Google.",
+      );
+    }
+
     const isMatch = await comparePassword(rawPassword, user.password);
     if (!isMatch) {
       throw new ApiError(401, "Incorrect password. Please try again.");
+    }
+
+    return authPayload(user);
+  },
+
+  async googleLogin({ idToken }) {
+    const profile = await verifyGoogleIdToken(idToken);
+    const normalizedEmail = normalizeEmail(profile.email);
+
+    let user = await User.findOne({
+      $or: [{ googleId: profile.googleId }, { email: normalizedEmail }],
+    });
+
+    if (!user) {
+      user = await User.create({
+        name: profile.name,
+        email: normalizedEmail,
+        googleId: profile.googleId,
+        authProvider: "google",
+        password: null,
+      });
+      await createUserDefaults(user._id);
+    } else {
+      if (!user.googleId) {
+        user.googleId = profile.googleId;
+      }
+      if (profile.name && user.name !== profile.name) {
+        user.name = user.name || profile.name;
+      }
+      if (user.authProvider !== "google" && !user.password) {
+        user.authProvider = "google";
+      }
+      await user.save();
     }
 
     return authPayload(user);

@@ -91,6 +91,28 @@
 
 /**
  * @openapi
+ * /auth/google:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Login or register with Google ID token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [idToken]
+ *             properties:
+ *               idToken: { type: string }
+ *     responses:
+ *       200:
+ *         description: Logged in with Google
+ *       401:
+ *         description: Invalid Google token
+ */
+
+/**
+ * @openapi
  * /auth/forgot-password:
  *   post:
  *     tags: [Auth]

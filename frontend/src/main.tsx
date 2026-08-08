@@ -1,6 +1,7 @@
 import { lazy, StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import "@/app/globals.css";
 import { StoreProvider } from "@/context/StoreContext";
 import Layout from "@/app/layout";
@@ -23,13 +24,15 @@ import ResetPasswordPage from "@/app/reset-password/page";
 import RequireAuth from "@/components/auth/RequireAuth";
 
 const CheckoutPage = lazy(() => import("@/app/checkout/page"));
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
-      <ScrollToTop />
-      <StoreProvider>
-        <Routes>
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <BrowserRouter>
+        <ScrollToTop />
+        <StoreProvider>
+          <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/shop" element={<ShopPage />} />
@@ -80,8 +83,9 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/order-success" element={<OrderSuccessPage />} />
             <Route path="*" element={<HomePage />} />
           </Route>
-        </Routes>
-      </StoreProvider>
-    </BrowserRouter>
+          </Routes>
+        </StoreProvider>
+      </BrowserRouter>
+    </GoogleOAuthProvider>
   </StrictMode>,
 );

@@ -10,7 +10,12 @@ import {
 import type { Product } from "@/types/product";
 import type { CartLine, PlacedOrder, ShippingInfo } from "@/types/order";
 import { ApiError } from "@/lib/api/client";
-import { loginApi, logoutApi, registerApi } from "@/lib/api/auth";
+import {
+  googleLoginApi,
+  loginApi,
+  logoutApi,
+  registerApi,
+} from "@/lib/api/auth";
 import {
   addCartItemApi,
   clearCartApi,
@@ -57,6 +62,7 @@ interface StoreContextValue {
     password: string;
   }) => Promise<AuthResult>;
   login: (email: string, password: string) => Promise<AuthResult>;
+  loginWithGoogle: (idToken: string) => Promise<AuthResult>;
   logout: () => Promise<void>;
   requireAuth: () => boolean;
   openLoginPrompt: () => void;
@@ -198,6 +204,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         return {
           ok: false as const,
           error: toErrorMessage(error, "Could not log in."),
+        };
+      }
+    },
+    [applySession],
+  );
+
+  const loginWithGoogle = useCallback(
+    async (idToken: string) => {
+      try {
+        await googleLoginApi(idToken);
+        resetSessionBootstrap();
+        const snapshot = await bootstrapSession();
+        if (!snapshot) {
+          return { ok: false as const, error: "Could not load account data." };
+        }
+        applySession(snapshot);
+        setLoginPromptOpen(false);
+        return { ok: true as const };
+      } catch (error) {
+        return {
+          ok: false as const,
+          error: toErrorMessage(error, "Google sign-in failed."),
         };
       }
     },
@@ -390,6 +418,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       cartCount: cart.reduce((sum, line) => sum + line.qty, 0),
       signup,
       login,
+      loginWithGoogle,
       logout,
       requireAuth,
       openLoginPrompt,
@@ -415,6 +444,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     lastOrder,
     signup,
     login,
+    loginWithGoogle,
     logout,
     requireAuth,
     openLoginPrompt,

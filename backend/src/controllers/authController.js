@@ -13,6 +13,11 @@ export const authController = {
     return ApiResponse(res, 200, data, "Logged in successfully");
   }),
 
+  googleLogin: asyncHandler(async (req, res) => {
+    const data = await authService.googleLogin(req.body);
+    return ApiResponse(res, 200, data, "Logged in with Google successfully");
+  }),
+
   logout: asyncHandler(async (_req, res) => {
     return ApiResponse(res, 200, null, "Logged out successfully");
   }),
