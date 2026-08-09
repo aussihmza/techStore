@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   createAdminProductApi,
   deleteAdminProductApi,
@@ -7,6 +7,7 @@ import {
 } from "@/admin/api/admin";
 import AdminSuccessModal from "@/admin/components/AdminSuccessModal";
 import ConfirmModal from "@/admin/components/ConfirmModal";
+import { getCategoriesApi, type ApiCategory } from "@/user/api/categories";
 import type { ApiProduct } from "@/user/api/products";
 import { ApiError } from "@/lib/api/client";
 import {
@@ -40,8 +41,35 @@ const emptyForm: FormState = {
   isFeatured: false,
 };
 
+/** Known catalog brands (seed + common store brands). */
+const KNOWN_BRANDS = [
+  "Apple",
+  "Samsung",
+  "Sony",
+  "Canon",
+  "Fujifilm",
+  "Logitech",
+  "Keychron",
+  "Google",
+  "Microsoft",
+  "Dell",
+  "HP",
+  "Lenovo",
+  "ASUS",
+  "Bose",
+  "JBL",
+  "Anker",
+];
+
+function uniqueSorted(values: string[]) {
+  return [...new Set(values.map((v) => v.trim()).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b),
+  );
+}
+
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<ApiProduct[]>([]);
+  const [categories, setCategories] = useState<ApiCategory[]>([]);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -53,6 +81,17 @@ export default function AdminProductsPage() {
     null,
   );
 
+  const categoryOptions = useMemo(() => {
+    const fromApi = categories.flatMap((c) => c.productCategories || []);
+    const fromProducts = products.map((p) => p.category);
+    return uniqueSorted([...fromApi, ...fromProducts, form.category]);
+  }, [categories, products, form.category]);
+
+  const brandOptions = useMemo(() => {
+    const fromProducts = products.map((p) => p.brand);
+    return uniqueSorted([...KNOWN_BRANDS, ...fromProducts, form.brand]);
+  }, [products, form.brand]);
+
   const load = async () => {
     const data = await getAdminProductsApi();
     setProducts(data.products);
@@ -62,7 +101,13 @@ export default function AdminProductsPage() {
     let active = true;
     void (async () => {
       try {
-        await load();
+        const [productsData, categoriesData] = await Promise.all([
+          getAdminProductsApi(),
+          getCategoriesApi(),
+        ]);
+        if (!active) return;
+        setProducts(productsData.products);
+        setCategories(categoriesData.categories);
       } catch (err) {
         if (active) {
           setError(err instanceof ApiError ? err.message : "Load failed.");
@@ -180,29 +225,86 @@ export default function AdminProductsPage() {
         <h3 className="font-display text-lg font-bold sm:col-span-2">
           {editingId ? "Edit product" : "Add product"}
         </h3>
-        {(
-          [
-            ["slug", "Slug (id)"],
-            ["name", "Name"],
-            ["category", "Category"],
-            ["brand", "Brand"],
-            ["price", "Price"],
-            ["image", "Image URL"],
-          ] as const
-        ).map(([key, label]) => (
-          <label key={key} className="text-sm">
-            <span className="mb-1 block font-medium text-slate-600">{label}</span>
-            <input
-              required
-              type={key === "price" ? "number" : "text"}
-              step={key === "price" ? "0.01" : undefined}
-              value={form[key]}
-              disabled={Boolean(editingId) && key === "slug"}
-              onChange={(e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))}
-              className="w-full rounded-xl border border-slate-200 px-3 py-2"
-            />
-          </label>
-        ))}
+        <label className="text-sm">
+          <span className="mb-1 block font-medium text-slate-600">Slug (id)</span>
+          <input
+            required
+            type="text"
+            value={form.slug}
+            disabled={Boolean(editingId)}
+            onChange={(e) => setForm((prev) => ({ ...prev, slug: e.target.value }))}
+            className="w-full rounded-xl border border-slate-200 px-3 py-2"
+          />
+        </label>
+        <label className="text-sm">
+          <span className="mb-1 block font-medium text-slate-600">Name</span>
+          <input
+            required
+            type="text"
+            value={form.name}
+            onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+            className="w-full rounded-xl border border-slate-200 px-3 py-2"
+          />
+        </label>
+        <label className="text-sm">
+          <span className="mb-1 block font-medium text-slate-600">Category</span>
+          <select
+            required
+            value={form.category}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, category: e.target.value }))
+            }
+            className="w-full rounded-xl border border-slate-200 px-3 py-2"
+          >
+            <option value="" disabled>
+              Select category
+            </option>
+            {categoryOptions.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="text-sm">
+          <span className="mb-1 block font-medium text-slate-600">Brand</span>
+          <select
+            required
+            value={form.brand}
+            onChange={(e) => setForm((prev) => ({ ...prev, brand: e.target.value }))}
+            className="w-full rounded-xl border border-slate-200 px-3 py-2"
+          >
+            <option value="" disabled>
+              Select brand
+            </option>
+            {brandOptions.map((brand) => (
+              <option key={brand} value={brand}>
+                {brand}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="text-sm">
+          <span className="mb-1 block font-medium text-slate-600">Price</span>
+          <input
+            required
+            type="number"
+            step="0.01"
+            value={form.price}
+            onChange={(e) => setForm((prev) => ({ ...prev, price: e.target.value }))}
+            className="w-full rounded-xl border border-slate-200 px-3 py-2"
+          />
+        </label>
+        <label className="text-sm">
+          <span className="mb-1 block font-medium text-slate-600">Image URL</span>
+          <input
+            required
+            type="text"
+            value={form.image}
+            onChange={(e) => setForm((prev) => ({ ...prev, image: e.target.value }))}
+            className="w-full rounded-xl border border-slate-200 px-3 py-2"
+          />
+        </label>
         <label className="text-sm sm:col-span-2">
           <span className="mb-1 block font-medium text-slate-600">Description</span>
           <textarea
