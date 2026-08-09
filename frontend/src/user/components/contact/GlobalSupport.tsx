@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { MailIcon, ShieldIcon, TruckIcon } from "@/user/components/ui/icons";
 
-const SUPPORT_EMAIL = "support@techstore.com";
+const SUPPORT_EMAIL = "storereham10@gmail.com";
 
 const channels = [
   {

@@ -22,6 +22,7 @@ type FormState = {
   brand: string;
   price: string;
   image: string;
+  gallery: string;
   description: string;
   storageOptions: string;
   isShop: boolean;
@@ -35,11 +36,29 @@ const emptyForm: FormState = {
   brand: "",
   price: "",
   image: "",
+  gallery: "",
   description: "",
   storageOptions: "",
   isShop: true,
   isFeatured: false,
 };
+
+function parseImageUrls(text: string) {
+  return [
+    ...new Set(
+      text
+        .split(/[\n,]+/)
+        .map((s) => s.trim())
+        .filter(Boolean),
+    ),
+  ];
+}
+
+function buildGallery(mainImage: string, galleryText: string) {
+  const main = mainImage.trim();
+  const extras = parseImageUrls(galleryText).filter((url) => url !== main);
+  return main ? [main, ...extras] : extras;
+}
 
 /** Known catalog brands (seed + common store brands). */
 const KNOWN_BRANDS = [
@@ -124,6 +143,9 @@ export default function AdminProductsPage() {
   const startEdit = (product: ApiProduct) => {
     setEditingId(product.id);
     const priced = normalizeStorageOptions(product.storageOptions, product.price);
+    const extraGallery = (product.gallery || []).filter(
+      (url) => url && url !== product.image,
+    );
     setForm({
       slug: product.id,
       name: product.name,
@@ -131,6 +153,7 @@ export default function AdminProductsPage() {
       brand: product.brand,
       price: String(product.price),
       image: product.image,
+      gallery: extraGallery.join("\n"),
       description: product.description || "",
       storageOptions: formatStorageOptionsInput(priced),
       isShop: Boolean(product.isShop),
@@ -147,18 +170,19 @@ export default function AdminProductsPage() {
     e.preventDefault();
     setSaving(true);
     setError("");
+    const gallery = buildGallery(form.image, form.gallery);
     const body = {
       slug: form.slug.trim(),
       name: form.name.trim(),
       category: form.category.trim(),
       brand: form.brand.trim(),
       price: Number(form.price),
-      image: form.image.trim(),
+      image: form.image.trim() || gallery[0] || "",
       description: form.description.trim(),
       storageOptions: form.storageOptions.trim(),
       isShop: form.isShop,
       isFeatured: form.isFeatured,
-      gallery: form.image.trim() ? [form.image.trim()] : [],
+      gallery,
     };
 
     try {
@@ -232,6 +256,7 @@ export default function AdminProductsPage() {
             type="text"
             value={form.slug}
             disabled={Boolean(editingId)}
+            placeholder="e.g. shop-pixel-9-pro"
             onChange={(e) => setForm((prev) => ({ ...prev, slug: e.target.value }))}
             className="w-full rounded-xl border border-slate-200 px-3 py-2"
           />
@@ -242,6 +267,7 @@ export default function AdminProductsPage() {
             required
             type="text"
             value={form.name}
+            placeholder="e.g. Google Pixel 9 Pro"
             onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
             className="w-full rounded-xl border border-slate-200 px-3 py-2"
           />
@@ -257,7 +283,7 @@ export default function AdminProductsPage() {
             className="w-full rounded-xl border border-slate-200 px-3 py-2"
           >
             <option value="" disabled>
-              Select category
+              e.g. Smartphones
             </option>
             {categoryOptions.map((category) => (
               <option key={category} value={category}>
@@ -275,7 +301,7 @@ export default function AdminProductsPage() {
             className="w-full rounded-xl border border-slate-200 px-3 py-2"
           >
             <option value="" disabled>
-              Select brand
+              e.g. Google
             </option>
             {brandOptions.map((brand) => (
               <option key={brand} value={brand}>
@@ -286,29 +312,58 @@ export default function AdminProductsPage() {
         </label>
         <label className="text-sm">
           <span className="mb-1 block font-medium text-slate-600">Price</span>
-          <input
-            required
-            type="number"
-            step="0.01"
-            value={form.price}
-            onChange={(e) => setForm((prev) => ({ ...prev, price: e.target.value }))}
-            className="w-full rounded-xl border border-slate-200 px-3 py-2"
-          />
+          <div className="relative">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-semibold text-slate-500">
+              $
+            </span>
+            <input
+              required
+              type="number"
+              step="0.01"
+              min="0"
+              value={form.price}
+              placeholder="999"
+              onChange={(e) => setForm((prev) => ({ ...prev, price: e.target.value }))}
+              className="w-full rounded-xl border border-slate-200 py-2 pl-7 pr-3"
+            />
+          </div>
         </label>
         <label className="text-sm">
-          <span className="mb-1 block font-medium text-slate-600">Image URL</span>
+          <span className="mb-1 block font-medium text-slate-600">
+            Main image URL
+          </span>
           <input
             required
             type="text"
             value={form.image}
+            placeholder=".jpg, .jpeg, .png, .webp, .gif, .svg"
             onChange={(e) => setForm((prev) => ({ ...prev, image: e.target.value }))}
             className="w-full rounded-xl border border-slate-200 px-3 py-2"
           />
         </label>
         <label className="text-sm sm:col-span-2">
+          <span className="mb-1 block font-medium text-slate-600">
+            Gallery images (optional)
+          </span>
+          <textarea
+            value={form.gallery}
+            placeholder=".jpg, .jpeg, .png, .webp, .gif, .svg — one per line"
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, gallery: e.target.value }))
+            }
+            rows={3}
+            className="w-full rounded-xl border border-slate-200 px-3 py-2 font-mono text-xs sm:text-sm"
+          />
+          <span className="mt-1 block text-xs text-slate-400">
+            Add extra product photos — one URL per line (or comma-separated). Main
+            image is included automatically.
+          </span>
+        </label>
+        <label className="text-sm sm:col-span-2">
           <span className="mb-1 block font-medium text-slate-600">Description</span>
           <textarea
             value={form.description}
+            placeholder="e.g. Flagship Android phone with advanced camera and AI features."
             onChange={(e) =>
               setForm((prev) => ({ ...prev, description: e.target.value }))
             }
@@ -326,7 +381,7 @@ export default function AdminProductsPage() {
             onChange={(e) =>
               setForm((prev) => ({ ...prev, storageOptions: e.target.value }))
             }
-            placeholder="128GB:999, 256GB:1099, 512GB:1299"
+            placeholder="e.g. 128GB:999, 256GB:1099, 512GB:1299"
             className="w-full rounded-xl border border-slate-200 px-3 py-2"
           />
           <span className="mt-1 block text-xs text-slate-400">
