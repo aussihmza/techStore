@@ -10,8 +10,19 @@ const app = express();
 
 app.use(
   cors({
-    origin: env.corsOrigin,
-  })
+    origin(origin, callback) {
+      // Non-browser clients (health checks, curl) often send no Origin
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      if (env.corsOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(null, false);
+    },
+  }),
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

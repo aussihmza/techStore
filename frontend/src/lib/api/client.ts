@@ -1,6 +1,8 @@
 import { getToken, setToken } from "@/lib/api/token";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API_URL = String(
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+).replace(/\/$/, "");
 
 export class ApiError extends Error {
   status: number;

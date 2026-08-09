@@ -7,7 +7,8 @@ export async function connectDB(uri) {
 
   mongoose.set("strictQuery", true);
   await mongoose.connect(uri, {
-    serverSelectionTimeoutMS: 3000,
+    // Atlas / cold starts need more than a local Mongo timeout
+    serverSelectionTimeoutMS: 15000,
   });
   console.log("MongoDB connected");
 }

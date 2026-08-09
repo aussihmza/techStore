@@ -65,7 +65,7 @@ export const paymentService = {
       throw new ApiError(400, "Order total is too small for Stripe payment");
     }
 
-    const frontendUrl = env.corsOrigin.replace(/\/$/, "");
+    const frontendUrl = env.frontendUrl.replace(/\/$/, "");
     const sessionPayload = {
       mode: "payment",
       payment_method_types: ["card"],

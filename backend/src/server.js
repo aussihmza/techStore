@@ -9,13 +9,22 @@ async function start() {
         await connectDB(env.mongoUri);
       } catch (dbError) {
         console.warn("MongoDB not connected —", dbError.message);
+        if (env.nodeEnv === "production") {
+          console.error("Exiting: MongoDB is required in production");
+          process.exit(1);
+        }
       }
     } else {
       console.warn("MONGODB_URI missing — starting without database");
+      if (env.nodeEnv === "production") {
+        console.error("Exiting: MONGODB_URI is required in production");
+        process.exit(1);
+      }
     }
 
-    app.listen(env.port, () => {
-      console.log(`Server running on http://localhost:${env.port}`);
+    // Bind all interfaces so Render/containers can reach the process
+    app.listen(env.port, "0.0.0.0", () => {
+      console.log(`Server listening on port ${env.port}`);
     });
   } catch (error) {
     console.error("Failed to start server:", error.message);
