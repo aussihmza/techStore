@@ -19,7 +19,11 @@ export default function WishlistPage() {
         {wishlist.length > 0 && (
           <button
             type="button"
-            onClick={() => wishlist.forEach(addToCart)}
+            onClick={() => {
+              wishlist.forEach((product) => {
+                void addToCart(product);
+              });
+            }}
             className="btn-primary shrink-0"
           >
             <CartIcon className="h-5 w-5" />
