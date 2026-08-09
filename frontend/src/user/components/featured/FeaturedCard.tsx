@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 import type { Product } from "@/types/product";
 import { useStore } from "@/context/StoreContext";
+import { isOutOfStock } from "@/user/lib/stock";
 import Badge from "@/user/components/ui/Badge";
 import ProductImage from "@/user/components/ui/ProductImage";
 import { PlusIcon } from "@/user/components/ui/icons";
 
 export default function FeaturedCard({ product }: { product: Product }) {
   const { addToCart } = useStore();
+  const outOfStock = isOutOfStock(product);
 
   return (
     <article className="surface-card group overflow-hidden rounded-2xl">
@@ -14,11 +16,14 @@ export default function FeaturedCard({ product }: { product: Product }) {
         to={`/product/${product.id}`}
         className="relative block aspect-[4/3] overflow-hidden bg-gradient-to-b from-slate-50 to-white p-5"
       >
-        {product.badge && (
-          <div className="absolute left-3 top-3 z-10">
-            <Badge label={product.badge} />
-          </div>
-        )}
+        <div className="absolute left-3 top-3 z-10 flex flex-col gap-1.5">
+          {product.badge ? <Badge label={product.badge} /> : null}
+          {outOfStock ? (
+            <span className="rounded-full bg-rose-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
+              Out of stock
+            </span>
+          ) : null}
+        </div>
         <ProductImage
           src={product.image}
           alt={product.name}
@@ -41,9 +46,16 @@ export default function FeaturedCard({ product }: { product: Product }) {
         </Link>
         <button
           type="button"
-          aria-label={`Add ${product.name} to cart`}
-          onClick={() => addToCart(product)}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-white shadow-md shadow-brand/30 transition-all hover:scale-105 hover:bg-brand-dark"
+          disabled={outOfStock}
+          aria-label={
+            outOfStock
+              ? `${product.name} is out of stock`
+              : `Add ${product.name} to cart`
+          }
+          onClick={() => {
+            if (!outOfStock) void addToCart(product);
+          }}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-white shadow-md shadow-brand/30 transition-all hover:scale-105 hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none disabled:hover:scale-100"
         >
           <PlusIcon className="h-4 w-4" />
         </button>

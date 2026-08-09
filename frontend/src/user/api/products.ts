@@ -59,6 +59,7 @@ export function toProductCard(product: ApiProduct): Product {
     category: product.category,
     brand: product.brand,
     price: product.price,
+    quantity: product.quantity,
     rating: product.rating,
     reviews: product.reviews,
     image: product.image,

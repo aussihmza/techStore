@@ -33,6 +33,7 @@ export function toProductResponse(product) {
     category: doc.category,
     brand: doc.brand,
     price: listPrice,
+    quantity: Number.isFinite(Number(doc.quantity)) ? Number(doc.quantity) : 100,
     rating: doc.rating,
     reviews: doc.reviews,
     image: doc.image,

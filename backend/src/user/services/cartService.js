@@ -56,15 +56,26 @@ export const cartService = {
       throw new ApiError(404, "Product not found");
     }
 
+    const stock = Number.isFinite(Number(product.quantity))
+      ? Number(product.quantity)
+      : 100;
+    if (stock < 1) {
+      throw new ApiError(400, "This product is out of stock");
+    }
+
     const variants = resolveProductVariants(product, color, storage);
     const lineItem = productToLineItem(product, quantity, variants);
     const cart = await getOrCreateCart(userId);
     const existing = cart.items.find(
       (item) => getItemLineId(item) === lineItem.lineId,
     );
+    const nextQty = (existing?.qty || 0) + quantity;
+    if (nextQty > stock) {
+      throw new ApiError(400, `Only ${stock} unit(s) available in stock`);
+    }
 
     if (existing) {
-      existing.qty += quantity;
+      existing.qty = nextQty;
       existing.lineId = lineItem.lineId;
       existing.selectedColor = lineItem.selectedColor;
       existing.selectedStorage = lineItem.selectedStorage;
@@ -93,6 +104,13 @@ export const cartService = {
     if (quantity < 1) {
       cart.items.splice(index, 1);
     } else {
+      const product = await findProductBySlugOrId(cart.items[index].productSlug);
+      const stock = Number.isFinite(Number(product?.quantity))
+        ? Number(product.quantity)
+        : 100;
+      if (quantity > stock) {
+        throw new ApiError(400, `Only ${stock} unit(s) available in stock`);
+      }
       cart.items[index].qty = quantity;
     }
 

@@ -21,6 +21,7 @@ type FormState = {
   category: string;
   brand: string;
   price: string;
+  quantity: string;
   image: string;
   gallery: string;
   description: string;
@@ -35,6 +36,7 @@ const emptyForm: FormState = {
   category: "",
   brand: "",
   price: "",
+  quantity: "",
   image: "",
   gallery: "",
   description: "",
@@ -80,6 +82,8 @@ const KNOWN_BRANDS = [
   "Anker",
 ];
 
+const BRAND_OTHER = "__other__";
+
 function uniqueSorted(values: string[]) {
   return [...new Set(values.map((v) => v.trim()).filter(Boolean))].sort((a, b) =>
     a.localeCompare(b),
@@ -90,6 +94,8 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [categories, setCategories] = useState<ApiCategory[]>([]);
   const [form, setForm] = useState<FormState>(emptyForm);
+  const [brandOther, setBrandOther] = useState(false);
+  const [customBrand, setCustomBrand] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -108,8 +114,8 @@ export default function AdminProductsPage() {
 
   const brandOptions = useMemo(() => {
     const fromProducts = products.map((p) => p.brand);
-    return uniqueSorted([...KNOWN_BRANDS, ...fromProducts, form.brand]);
-  }, [products, form.brand]);
+    return uniqueSorted([...KNOWN_BRANDS, ...fromProducts]);
+  }, [products]);
 
   const load = async () => {
     const data = await getAdminProductsApi();
@@ -146,12 +152,20 @@ export default function AdminProductsPage() {
     const extraGallery = (product.gallery || []).filter(
       (url) => url && url !== product.image,
     );
+    const knownBrands = uniqueSorted([
+      ...KNOWN_BRANDS,
+      ...products.map((p) => p.brand),
+    ]);
+    const isKnown = knownBrands.includes(product.brand);
+    setBrandOther(!isKnown);
+    setCustomBrand(isKnown ? "" : product.brand);
     setForm({
       slug: product.id,
       name: product.name,
       category: product.category,
-      brand: product.brand,
+      brand: isKnown ? product.brand : "",
       price: String(product.price),
+      quantity: String(product.quantity ?? 100),
       image: product.image,
       gallery: extraGallery.join("\n"),
       description: product.description || "",
@@ -163,6 +177,8 @@ export default function AdminProductsPage() {
 
   const resetForm = () => {
     setEditingId(null);
+    setBrandOther(false);
+    setCustomBrand("");
     setForm(emptyForm);
   };
 
@@ -170,13 +186,30 @@ export default function AdminProductsPage() {
     e.preventDefault();
     setSaving(true);
     setError("");
+    const brand = brandOther ? customBrand.trim() : form.brand.trim();
+    if (!brand) {
+      setError(
+        brandOther
+          ? "Please enter a new brand name."
+          : "Please select a brand.",
+      );
+      setSaving(false);
+      return;
+    }
+    const quantity = Number(form.quantity);
+    if (!Number.isInteger(quantity) || quantity < 0) {
+      setError("Quantity must be a whole number (0 or more).");
+      setSaving(false);
+      return;
+    }
     const gallery = buildGallery(form.image, form.gallery);
     const body = {
       slug: form.slug.trim(),
       name: form.name.trim(),
       category: form.category.trim(),
-      brand: form.brand.trim(),
+      brand,
       price: Number(form.price),
+      quantity,
       image: form.image.trim() || gallery[0] || "",
       description: form.description.trim(),
       storageOptions: form.storageOptions.trim(),
@@ -296,8 +329,18 @@ export default function AdminProductsPage() {
           <span className="mb-1 block font-medium text-slate-600">Brand</span>
           <select
             required
-            value={form.brand}
-            onChange={(e) => setForm((prev) => ({ ...prev, brand: e.target.value }))}
+            value={brandOther ? BRAND_OTHER : form.brand}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === BRAND_OTHER) {
+                setBrandOther(true);
+                setForm((prev) => ({ ...prev, brand: "" }));
+                return;
+              }
+              setBrandOther(false);
+              setCustomBrand("");
+              setForm((prev) => ({ ...prev, brand: value }));
+            }}
             className="w-full rounded-xl border border-slate-200 px-3 py-2"
           >
             <option value="" disabled>
@@ -308,8 +351,24 @@ export default function AdminProductsPage() {
                 {brand}
               </option>
             ))}
+            <option value={BRAND_OTHER}>Other</option>
           </select>
         </label>
+        {brandOther ? (
+          <label className="text-sm sm:col-span-2">
+            <span className="mb-1 block font-medium text-slate-600">
+              New brand name
+            </span>
+            <input
+              required
+              type="text"
+              value={customBrand}
+              placeholder="e.g. Nothing, OnePlus, Xiaomi"
+              onChange={(e) => setCustomBrand(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 px-3 py-2"
+            />
+          </label>
+        ) : null}
         <label className="text-sm">
           <span className="mb-1 block font-medium text-slate-600">Price</span>
           <div className="relative">
@@ -327,6 +386,24 @@ export default function AdminProductsPage() {
               className="w-full rounded-xl border border-slate-200 py-2 pl-7 pr-3"
             />
           </div>
+        </label>
+        <label className="text-sm">
+          <span className="mb-1 block font-medium text-slate-600">Quantity</span>
+          <input
+            required
+            type="number"
+            step="1"
+            min="0"
+            value={form.quantity}
+            placeholder="e.g. 25"
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, quantity: e.target.value }))
+            }
+            className="w-full rounded-xl border border-slate-200 px-3 py-2"
+          />
+          <span className="mt-1 block text-xs text-slate-400">
+            Available stock units. Use 0 for out of stock.
+          </span>
         </label>
         <label className="text-sm">
           <span className="mb-1 block font-medium text-slate-600">
@@ -424,6 +501,7 @@ export default function AdminProductsPage() {
             <tr>
               <th className="px-4 py-3 font-medium">Name</th>
               <th className="px-4 py-3 font-medium">Price</th>
+              <th className="px-4 py-3 font-medium">Qty</th>
               <th className="px-4 py-3 font-medium">Category</th>
               <th className="px-4 py-3 font-medium">Actions</th>
             </tr>
@@ -433,6 +511,7 @@ export default function AdminProductsPage() {
               <tr key={product.id} className="border-b border-slate-50">
                 <td className="px-4 py-3 font-semibold">{product.name}</td>
                 <td className="px-4 py-3">${product.price.toFixed(2)}</td>
+                <td className="px-4 py-3">{product.quantity ?? 100}</td>
                 <td className="px-4 py-3">{product.category}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-2">

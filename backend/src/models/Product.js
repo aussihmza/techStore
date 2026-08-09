@@ -46,6 +46,8 @@ const productSchema = new mongoose.Schema(
     category: { type: String, required: true, trim: true },
     brand: { type: String, required: true, trim: true },
     price: { type: Number, required: true, min: 0 },
+    /** Available inventory units */
+    quantity: { type: Number, required: true, min: 0, default: 100 },
     rating: { type: Number, required: true, min: 0, max: 5, default: 0 },
     reviews: { type: Number, required: true, min: 0, default: 0 },
     image: { type: String, required: true },

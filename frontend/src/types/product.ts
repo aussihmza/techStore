@@ -6,6 +6,8 @@ export interface Product {
   category: string;
   brand: string;
   price: number;
+  /** Available inventory units */
+  quantity?: number;
   rating: number;
   reviews: number;
   image: string;

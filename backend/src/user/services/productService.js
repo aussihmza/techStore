@@ -18,6 +18,13 @@ function withNormalizedStorage(payload = {}) {
       next.price,
     );
   }
+  if (next.quantity != null) {
+    const qty = Number(next.quantity);
+    if (!Number.isFinite(qty) || qty < 0 || !Number.isInteger(qty)) {
+      throw new ApiError(400, "quantity must be a non-negative integer");
+    }
+    next.quantity = qty;
+  }
   return next;
 }
 

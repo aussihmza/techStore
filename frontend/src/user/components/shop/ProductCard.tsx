@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Product } from "@/types/product";
 import { useStore } from "@/context/StoreContext";
+import { getProductStock, isOutOfStock } from "@/user/lib/stock";
 import Badge from "@/user/components/ui/Badge";
 import Rating from "@/user/components/ui/Rating";
 import ProductImage from "@/user/components/ui/ProductImage";
@@ -13,6 +14,9 @@ export default function ProductCard({ product }: { product: Product }) {
   const { cart, isWishlisted, toggleWishlist, addToCart, updateQty, removeFromCart } = useStore();
   const wished = isWishlisted(product.id);
   const qty = cart.find((line) => line.id === product.id)?.qty ?? 0;
+  const stock = getProductStock(product);
+  const outOfStock = isOutOfStock(product);
+  const atStockLimit = qty >= stock;
   const [controlsOpen, setControlsOpen] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -44,7 +48,8 @@ export default function ProductCard({ product }: { product: Product }) {
   };
 
   const handleAdd = () => {
-    addToCart(product);
+    if (outOfStock) return;
+    void addToCart(product);
     openControls();
   };
 
@@ -60,6 +65,7 @@ export default function ProductCard({ product }: { product: Product }) {
   };
 
   const handleIncrease = () => {
+    if (atStockLimit) return;
     updateQty(product.id, qty + 1);
     startCollapseTimer();
   };
@@ -67,8 +73,13 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <article className="surface-card group flex flex-col overflow-hidden rounded-2xl">
       <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-b from-slate-50 to-white p-5">
-        <div className="absolute left-3 top-3 z-10">
+        <div className="absolute left-3 top-3 z-10 flex flex-col gap-1.5">
           {product.badge && <Badge label={product.badge} />}
+          {outOfStock ? (
+            <span className="rounded-full bg-rose-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
+              Out of stock
+            </span>
+          ) : null}
         </div>
         <button
           type="button"
@@ -113,7 +124,11 @@ export default function ProductCard({ product }: { product: Product }) {
               ${product.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </Link>
 
-            {qty === 0 ? (
+            {outOfStock ? (
+              <span className="rounded-lg bg-rose-50 px-2.5 py-2 text-center text-[11px] font-bold uppercase tracking-wide text-rose-600">
+                Out of stock
+              </span>
+            ) : qty === 0 ? (
               <button
                 type="button"
                 aria-label="Add to cart"
@@ -154,8 +169,9 @@ export default function ProductCard({ product }: { product: Product }) {
               <button
                 type="button"
                 aria-label="Increase quantity"
+                disabled={atStockLimit}
                 onClick={handleIncrease}
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-ink transition-colors hover:bg-black/5"
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-ink transition-colors hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <PlusIcon className="h-5 w-5" />
               </button>

@@ -1,4 +1,5 @@
 import { Order } from "../../models/Order.js";
+import { Product } from "../../models/Product.js";
 import { ApiError } from "../../utils/ApiError.js";
 import {
   calcCartTotals,
@@ -14,6 +15,40 @@ import {
   normalizePromoCode,
 } from "../../config/promos.js";
 import { sendOrderConfirmationEmail } from "../../utils/mail.js";
+
+async function assertStockAvailable(cartItems) {
+  for (const item of cartItems) {
+    const product = await Product.findOne({ slug: item.productSlug });
+    const stock = Number.isFinite(Number(product?.quantity))
+      ? Number(product.quantity)
+      : 100;
+    if (!product || stock < item.qty) {
+      throw new ApiError(
+        400,
+        `${item.name || item.productSlug} does not have enough stock`,
+      );
+    }
+  }
+}
+
+async function decrementStock(cartItems) {
+  for (const item of cartItems) {
+    const updated = await Product.findOneAndUpdate(
+      {
+        slug: item.productSlug,
+        quantity: { $gte: item.qty },
+      },
+      { $inc: { quantity: -item.qty } },
+      { new: true },
+    );
+    if (!updated) {
+      throw new ApiError(
+        400,
+        `${item.name || item.productSlug} does not have enough stock`,
+      );
+    }
+  }
+}
 
 function normalizeOrderQuery(orderId = "") {
   return orderId.trim().toUpperCase().replace(/^#/, "");
@@ -43,8 +78,13 @@ async function createOrderFromCart(userId, shipping, payment, promoCode) {
     throw new ApiError(400, "Cart is empty");
   }
 
+  const itemsSnapshot = cart.items.map((item) =>
+    typeof item.toObject === "function" ? item.toObject() : { ...item },
+  );
+  await assertStockAvailable(itemsSnapshot);
+
   const validatedShipping = requireShipping(shipping);
-  const subtotal = cart.items.reduce(
+  const subtotal = itemsSnapshot.reduce(
     (sum, item) => sum + item.price * item.qty,
     0
   );
@@ -60,7 +100,7 @@ async function createOrderFromCart(userId, shipping, payment, promoCode) {
       order = await Order.create({
         orderId: generateOrderId(),
         user: userId,
-        items: cart.items,
+        items: itemsSnapshot,
         ...totals,
         promoCode: promo.promoCode,
         shipping: validatedShipping,
@@ -84,6 +124,8 @@ async function createOrderFromCart(userId, shipping, payment, promoCode) {
   if (!order) {
     throw new ApiError(500, "Could not create order. Please try again.");
   }
+
+  await decrementStock(itemsSnapshot);
 
   cart.items = [];
   await cart.save();

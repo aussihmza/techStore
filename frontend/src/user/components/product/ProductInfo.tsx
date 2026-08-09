@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import type { Product, ProductDetail } from "@/types/product";
 import { useStore } from "@/context/StoreContext";
 import { setAuthReturn } from "@/lib/authRedirect";
+import { getProductStock, isOutOfStock } from "@/user/lib/stock";
 import { buildCartLineId } from "@/user/lib/variants";
 import { CartIcon, MinusIcon, PlusIcon, ShieldIcon, StarIcon, TrashIcon, TruckIcon } from "@/user/components/ui/icons";
 
@@ -31,6 +32,9 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
 
   const cartLine = cart.find((line) => line.id === lineId);
   const qty = cartLine?.qty ?? 0;
+  const stock = getProductStock(product);
+  const outOfStock = isOutOfStock(product);
+  const atStockLimit = qty >= stock;
 
   const badgeLabel =
     product.badge === "NEW"
@@ -47,9 +51,13 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
     storage: selectedStorage?.label || null,
   };
 
-  const handleAdd = () => addToCart(product, variantOptions);
+  const handleAdd = () => {
+    if (outOfStock || atStockLimit) return;
+    void addToCart(product, variantOptions);
+  };
 
   const handleBuyNow = async () => {
+    if (outOfStock) return;
     if (!isLoggedIn) {
       setAuthReturn({
         returnTo: `/product/${product.id}`,
@@ -66,9 +74,16 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
 
   return (
     <div className="flex flex-col">
-      <span className="inline-flex w-fit rounded-full bg-brand px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-        {badgeLabel}
-      </span>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="inline-flex w-fit rounded-full bg-brand px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+          {badgeLabel}
+        </span>
+        {outOfStock ? (
+          <span className="inline-flex w-fit rounded-full bg-rose-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-rose-700">
+            Out of stock
+          </span>
+        ) : null}
+      </div>
 
       <h1 className="font-display mt-4 text-3xl font-extrabold tracking-tight text-ink sm:text-4xl lg:text-5xl">
         {product.name}
@@ -152,7 +167,15 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
       <p className="mt-7 text-base leading-relaxed text-slate-500">{detail.description}</p>
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-        {qty > 0 ? (
+        {outOfStock ? (
+          <button
+            type="button"
+            disabled
+            className="btn-primary flex-1 cursor-not-allowed opacity-50"
+          >
+            Out of Stock
+          </button>
+        ) : qty > 0 ? (
           <div className="inline-flex flex-1 items-center justify-between rounded-xl border-2 border-slate-400 bg-slate-100 px-2 py-1.5 text-ink sm:min-h-[3.25rem]">
             <button
               type="button"
@@ -175,8 +198,11 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
             <button
               type="button"
               aria-label="Increase quantity"
-              onClick={() => updateQty(lineId, qty + 1)}
-              className="flex h-10 w-10 items-center justify-center rounded-lg text-ink transition-colors hover:bg-black/5"
+              disabled={atStockLimit}
+              onClick={() => {
+                if (!atStockLimit) updateQty(lineId, qty + 1);
+              }}
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-ink transition-colors hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <PlusIcon className="h-5 w-5" />
             </button>
@@ -189,8 +215,9 @@ export default function ProductInfo({ product, detail }: ProductInfoProps) {
         )}
         <button
           type="button"
+          disabled={outOfStock}
           onClick={() => void handleBuyNow()}
-          className="btn-secondary flex-1 border-brand/40 text-brand hover:border-brand"
+          className="btn-secondary flex-1 border-brand/40 text-brand hover:border-brand disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-brand/40"
         >
           Buy Now
         </button>
