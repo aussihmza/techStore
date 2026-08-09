@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   getAdminStatsApi,
+  type AdminProductOrderStat,
   type AdminRecentOrder,
   type AdminStats,
 } from "@/admin/api/admin";
+import ProductOrdersPieChart from "@/admin/components/ProductOrdersPieChart";
 import { ApiError } from "@/lib/api/client";
 
 const cardStyles = [
@@ -26,6 +28,9 @@ function paymentTone(status: string) {
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [recent, setRecent] = useState<AdminRecentOrder[]>([]);
+  const [productOrders, setProductOrders] = useState<AdminProductOrderStat[]>(
+    [],
+  );
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -37,6 +42,7 @@ export default function AdminDashboardPage() {
         if (!active) return;
         setStats(data.stats);
         setRecent(data.recentOrders);
+        setProductOrders(data.topProductsByOrders || []);
       } catch (err) {
         if (!active) return;
         setError(
@@ -102,6 +108,16 @@ export default function AdminDashboardPage() {
           );
         })}
       </div>
+
+      <section className="rounded-2xl border border-slate-200/90 bg-white shadow-sm shadow-slate-900/5">
+        <div className="border-b border-slate-100 px-5 py-4">
+          <h3 className="font-display text-lg font-bold">Orders by product</h3>
+          <p className="text-sm text-slate-500">
+            Share of units sold — which products get ordered the most
+          </p>
+        </div>
+        <ProductOrdersPieChart slices={productOrders} />
+      </section>
 
       <section className="rounded-2xl border border-slate-200/90 bg-white shadow-sm shadow-slate-900/5">
         <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-100 px-5 py-4">

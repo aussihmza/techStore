@@ -18,6 +18,12 @@ export interface AdminRecentOrder {
   placedAt: string;
 }
 
+export interface AdminProductOrderStat {
+  productSlug: string;
+  name: string;
+  quantity: number;
+}
+
 export interface AdminOrder extends PlacedOrder {
   orderId: string;
   user: { id: string; name: string; email: string } | null;
@@ -48,9 +54,11 @@ export interface AdminReturn {
 }
 
 export function getAdminStatsApi() {
-  return apiRequest<{ stats: AdminStats; recentOrders: AdminRecentOrder[] }>(
-    "/admin/stats",
-  );
+  return apiRequest<{
+    stats: AdminStats;
+    recentOrders: AdminRecentOrder[];
+    topProductsByOrders: AdminProductOrderStat[];
+  }>("/admin/stats");
 }
 
 export function getAdminProductsApi() {
